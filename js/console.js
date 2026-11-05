@@ -40,46 +40,62 @@
         el.uploadButton = byId(IDS.uploadButton);
     }
 
-    // ===== AVISOS (toast propio; sustituye a window.alert) ===== //
-    function toastStack() {
-        let stack = document.querySelector(".fnx-toast-stack");
-        if (!stack) {
-            stack = document.createElement("div");
-            stack.className = "fnx-toast-stack";
-            stack.setAttribute("role", "status");
-            stack.setAttribute("aria-live", "polite");
-            document.body.appendChild(stack);
-        }
-        return stack;
+    // ===== REGISTRO DE RESULTADOS ===== //
+    // El resultado vive en la columna derecha, junto a la consola: no hay
+    // avisos flotantes ni diálogos nativos.
+    const MAX_LOG_LINES = 60;
+
+    function outputElement() {
+        return document.getElementById("fnx-console-output");
     }
 
-    function toast(message, { tone = "default", code = "" } = {}) {
-        const node = document.createElement("div");
-        node.className = "fnx-toast";
-        node.dataset.tone = tone;
+    function log(message, { tone = "", code = "", kind = "", prefix = "" } = {}) {
+        const out = outputElement();
+        if (!out) return null;
+
+        const line = document.createElement("div");
+        line.className = "fnx-log__line";
+        if (tone) line.dataset.tone = tone;
+        if (kind) line.dataset.kind = kind;
+
+        if (prefix) {
+            const prompt = document.createElement("span");
+            prompt.textContent = prefix;
+            line.appendChild(prompt);
+        }
 
         if (code) {
             const codeNode = document.createElement("span");
-            codeNode.className = "fnx-toast__code";
+            codeNode.className = "fnx-log__code";
             codeNode.textContent = code;
-            node.appendChild(codeNode);
+            line.appendChild(codeNode);
+            line.appendChild(document.createTextNode(" "));
         }
 
         const text = document.createElement("span");
         text.textContent = message;
-        node.appendChild(text);
+        line.appendChild(text);
 
-        toastStack().appendChild(node);
-        requestAnimationFrame(() => {
-            node.dataset.state = "visible";
+        out.appendChild(line);
+
+        // El registro no crece sin límite.
+        while (out.querySelectorAll(".fnx-log__line").length > MAX_LOG_LINES) {
+            const oldest = out.querySelector(".fnx-log__line");
+            if (!oldest) break;
+            oldest.parentNode.removeChild(oldest);
+        }
+
+        out.scrollTop = out.scrollHeight;
+        return line;
+    }
+
+    /** Retira las narraciones anteriores para dejar sitio a la nueva. */
+    function clearNarratives() {
+        const out = outputElement();
+        if (!out) return;
+        out.querySelectorAll(".fnx-log").forEach((node) => {
+            node.parentNode.removeChild(node);
         });
-
-        setTimeout(() => {
-            node.dataset.state = "hidden";
-            setTimeout(() => {
-                if (node.parentNode) node.parentNode.removeChild(node);
-            }, 340);
-        }, 2800);
     }
 
     // ===== PALETA DE COMANDOS ===== //
@@ -202,7 +218,7 @@
     // ===== EJECUCIÓN ===== //
     function execute(value) {
         if (!window.AICanvas || typeof window.AICanvas.execute !== "function") {
-            toast("El motor del lienzo no está disponible", { tone: "danger" });
+            log("El motor del lienzo no está disponible", { tone: "danger" });
             return;
         }
         window.AICanvas.execute(value);
@@ -320,17 +336,19 @@
 
         if (!value) return;
 
+        log(value, { kind: "echo", prefix: "> " });
+
         if (!matched) {
             if (value.charAt(0) === "#") {
-                toast("Comando desconocido", { tone: "danger", code: value });
+                log("Comando desconocido", { tone: "danger", code: value });
             } else {
-                toast("Renderizado en el lienzo", { code: value });
+                log("Texto rasterizado en el lienzo", { tone: "primary" });
             }
             return;
         }
 
         if (command === "#cv" || command === "#robot" || command === "#reptile") {
-            toast("Presentación en marcha", { code: command });
+            log("Presentación en marcha", { tone: "primary", code: command });
         }
     }
 
@@ -338,6 +356,7 @@
         const detail = event.detail;
 
         if (detail.state === "start") {
+            clearNarratives();
             state.presentation = { deck: detail.deck, index: 0, total: 0 };
             // La paleta se pliega durante la presentación: la consola baja a
             // una sola línea y deja el lienzo al espectador.
@@ -359,14 +378,14 @@
         if (detail.state === "end") {
             state.presentation = null;
             updateCount();
-            toast("Presentación finalizada", { code: detail.deck });
+            log("Presentación finalizada", { code: detail.deck });
             return;
         }
 
         if (detail.state === "error") {
             state.presentation = null;
             updateCount();
-            toast("No se pudo cargar el guion", { tone: "danger", code: detail.deck });
+            log("No se pudo cargar el guion", { tone: "danger", code: detail.deck });
         }
     }
 
@@ -424,6 +443,6 @@
     window.FenixConsole = {
         init: initConsole,
         setOpen,
-        toast
+        log
     };
 })();

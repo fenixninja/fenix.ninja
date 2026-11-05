@@ -1,43 +1,41 @@
 /*
- * Fenix Ninja — Consola de comandos
+ * Fenix Ninja — Consola de comandos (columna derecha)
  * Superficie de interacción propia: sin diálogos nativos, sin emojis del SO.
  * Todos los valores provienen de css/tokens.css.
  */
 
-/* ===== Barra ===== */
+/* ===== Columna ===== */
 .fnx-console {
     position: fixed;
-    bottom: var(--space-5);
-    left: 50%;
-    transform: translateX(-50%);
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: var(--panel-width);
+
     z-index: var(--z-console);
 
     display: flex;
-    align-items: flex-end;
-    gap: var(--space-2);
-
-    width: min(760px, calc(100vw - var(--space-6)));
+    flex-direction: column;
 }
 
 .fnx-console__panel {
     flex: 1 1 auto;
-    min-width: 0;
+    min-height: 0;
 
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
 
-    padding: var(--space-3) var(--space-4) var(--space-3);
+    padding: var(--space-4);
+    gap: var(--space-3);
 
     background: var(--color-surface);
-    border: 1px solid var(--color-border-default);
-    border-radius: var(--radius-lg);
+    border-left: 1px solid var(--color-border-default);
     box-shadow: var(--shadow-panel);
 
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
 
-    transform-origin: bottom center;
+    transform-origin: right center;
     transition:
         opacity var(--duration-base) var(--ease-out),
         transform var(--duration-base) var(--ease-out),
@@ -47,16 +45,21 @@
 .fnx-console[data-open="false"] .fnx-console__panel {
     opacity: 0;
     visibility: hidden;
-    transform: translateY(calc(var(--space-3) * -1)) scale(0.98);
+    transform: translateX(calc(var(--panel-width) * 0.06));
     pointer-events: none;
 }
 
 /* ===== Cabecera ===== */
 .fnx-console__head {
+    flex: none;
+
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
+
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .fnx-console__title {
@@ -74,96 +77,188 @@
     color: var(--color-text-faint);
 }
 
-/* ===== Campo de entrada ===== */
-.fnx-console__field {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-
-    padding: var(--space-2) var(--space-3);
-    background: var(--color-surface-sunken);
-    border: 1px solid var(--color-border-subtle);
-    border-radius: var(--radius-md);
-
-    transition:
-        border-color var(--duration-fast) var(--ease-out),
-        box-shadow var(--duration-fast) var(--ease-out);
-}
-
-.fnx-console__field:focus-within {
-    border-color: var(--color-primary);
-    box-shadow: var(--shadow-glow-subtle);
-}
-
-.fnx-console__field .fnx-icon {
-    color: var(--color-primary);
-}
-
-.fnx-console__input {
+/* ===== Resultado / narración ===== */
+.fnx-console__output {
     flex: 1 1 auto;
-    min-width: 0;
+    min-height: 0;
 
-    background: none;
-    border: none;
-    outline: none;
+    overflow-y: auto;
+    overscroll-behavior: contain;
 
+    padding-right: var(--space-2);
+
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
     color: var(--color-text);
-    font-family: var(--font-mono);
-    font-size: var(--text-md);
-    line-height: var(--leading-tight);
-
-    caret-color: var(--color-primary);
 }
 
-.fnx-console__input::placeholder {
-    color: var(--color-text-faint);
+/* Scroll con nuestro estilo */
+.fnx-console__output::-webkit-scrollbar,
+.fnx-console__list::-webkit-scrollbar {
+    width: 8px;
 }
 
-/* ===== Botón de subida de imagen ===== */
-.fnx-console__upload {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+.fnx-console__output::-webkit-scrollbar-track,
+.fnx-console__list::-webkit-scrollbar-track {
+    background: var(--color-surface-sunken);
+    border-radius: var(--radius-pill);
+}
 
-    width: 2rem;
-    height: 2rem;
-    padding: 0;
+.fnx-console__output::-webkit-scrollbar-thumb,
+.fnx-console__list::-webkit-scrollbar-thumb {
+    background: var(--color-border-strong);
+    border-radius: var(--radius-pill);
+    transition: background var(--duration-fast) var(--ease-out);
+}
 
+.fnx-console__output::-webkit-scrollbar-thumb:hover,
+.fnx-console__list::-webkit-scrollbar-thumb:hover {
+    background: var(--color-primary);
+}
+
+.fnx-console__output {
+    scrollbar-color: var(--color-border-strong) var(--color-surface-sunken);
+    scrollbar-width: thin;
+}
+
+/* ===== Entradas del registro ===== */
+.fnx-log {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.fnx-log__line {
+    padding-left: var(--space-3);
+    border-left: 2px solid var(--color-border-default);
     color: var(--color-text-muted);
-    background: none;
-    border: 1px solid transparent;
-    border-radius: var(--radius-sm);
-
-    cursor: pointer;
-    transition:
-        color var(--duration-fast) var(--ease-out),
-        border-color var(--duration-fast) var(--ease-out),
-        background-color var(--duration-fast) var(--ease-out);
+    overflow-wrap: anywhere;
 }
 
-.fnx-console__upload:hover {
+.fnx-log__line[data-tone="danger"] {
+    border-left-color: var(--color-danger);
+    color: var(--color-text);
+}
+
+.fnx-log__line[data-tone="primary"] {
+    border-left-color: var(--color-primary);
+}
+
+.fnx-log__line[data-kind="echo"] {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
     color: var(--color-primary);
-    border-color: var(--color-border-default);
-    background: var(--color-primary-faint);
+    border-left-color: var(--color-primary-muted);
 }
 
-.fnx-console__file {
+.fnx-log__code {
+    font-family: var(--font-mono);
+    color: var(--color-primary);
+}
+
+.fnx-log__line[data-tone="danger"] .fnx-log__code {
+    color: var(--color-danger);
+}
+
+/* Narración de la presentación */
+.fnx-log__title {
+    overflow-wrap: anywhere;
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-bold);
+    letter-spacing: 0.04em;
+    color: var(--color-primary);
+    line-height: var(--leading-tight);
+}
+
+.fnx-log__body {
+    color: var(--color-text);
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.fnx-log__items {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.fnx-log__items li {
+    position: relative;
+    padding-left: var(--space-4);
+}
+
+.fnx-log__items li::before {
+    content: "";
     position: absolute;
-    width: 1px;
+    left: 0;
+    top: 0.62em;
+
+    width: var(--space-2);
     height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
+
+    background: var(--color-primary);
+}
+
+.fnx-log__links {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    margin-top: var(--space-1);
+}
+
+.fnx-log__link {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-left: var(--space-2);
+    border-left: 1px solid var(--color-border-default);
+}
+
+.fnx-log__link-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--color-primary);
+}
+
+.fnx-log__link-url {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-text-faint);
+    overflow-wrap: anywhere;
+}
+
+/* Cursor de escritura */
+.fnx-log__caret {
+    display: inline-block;
+    width: 0.5em;
+    height: 1em;
+    margin-left: 2px;
+    vertical-align: text-bottom;
+
+    background: var(--color-primary);
+    animation: fnx-caret 1s steps(2, start) infinite;
+}
+
+@keyframes fnx-caret {
+    50% {
+        opacity: 0;
+    }
+}
+
+.fnx-log__hint {
+    font-size: var(--text-xs);
+    color: var(--color-text-faint);
 }
 
 /* ===== Paleta de comandos ===== */
 .fnx-console__list {
+    flex: none;
+
     list-style: none;
 
-    max-height: 232px;
+    max-height: 38vh;
     overflow-y: auto;
     overscroll-behavior: contain;
 
@@ -173,19 +268,6 @@
 
 .fnx-console__list[hidden] {
     display: none;
-}
-
-.fnx-console__list::-webkit-scrollbar {
-    width: 6px;
-}
-
-.fnx-console__list::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.fnx-console__list::-webkit-scrollbar-thumb {
-    background: var(--color-border-strong);
-    border-radius: var(--radius-pill);
 }
 
 .fnx-console__option {
@@ -226,7 +308,7 @@
     flex: 1 1 auto;
     min-width: 0;
 
-    font-size: var(--text-sm);
+    font-size: var(--text-xs);
     color: var(--color-text-muted);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -235,13 +317,102 @@
 
 .fnx-console__empty {
     padding: var(--space-3);
-    font-size: var(--text-sm);
+    font-size: var(--text-xs);
     color: var(--color-text-faint);
     text-align: center;
 }
 
+/* ===== Campo de entrada ===== */
+.fnx-console__field {
+    flex: none;
+
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+
+    padding: var(--space-2) var(--space-3);
+    background: var(--color-surface-sunken);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-md);
+
+    transition:
+        border-color var(--duration-fast) var(--ease-out),
+        box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.fnx-console__field:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-glow-subtle);
+}
+
+.fnx-console__field .fnx-icon {
+    color: var(--color-primary);
+}
+
+.fnx-console__input {
+    flex: 1 1 auto;
+    min-width: 0;
+
+    background: none;
+    border: none;
+    outline: none;
+
+    color: var(--color-text);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    line-height: var(--leading-tight);
+
+    caret-color: var(--color-primary);
+}
+
+.fnx-console__input::placeholder {
+    color: var(--color-text-faint);
+}
+
+/* ===== Botón de subida de imagen ===== */
+.fnx-console__upload {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 1.9rem;
+    height: 1.9rem;
+    padding: 0;
+
+    color: var(--color-text-muted);
+    background: none;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+
+    cursor: pointer;
+    transition:
+        color var(--duration-fast) var(--ease-out),
+        border-color var(--duration-fast) var(--ease-out),
+        background-color var(--duration-fast) var(--ease-out);
+}
+
+.fnx-console__upload:hover {
+    color: var(--color-primary);
+    border-color: var(--color-border-default);
+    background: var(--color-primary-faint);
+}
+
+.fnx-console__file {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 /* ===== Pista de teclado ===== */
 .fnx-console__hint {
+    flex: none;
+
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -269,7 +440,10 @@
 
 /* ===== Botón de plegado ===== */
 .fnx-console__toggle {
-    flex: none;
+    position: fixed;
+    top: var(--panel-gutter);
+    right: calc(var(--panel-width) + var(--panel-gutter));
+    z-index: var(--z-console);
 
     display: inline-flex;
     align-items: center;
@@ -288,6 +462,7 @@
     -webkit-backdrop-filter: blur(14px);
 
     transition:
+        right var(--duration-base) var(--ease-out),
         color var(--duration-fast) var(--ease-out),
         border-color var(--duration-fast) var(--ease-out),
         transform var(--duration-fast) var(--ease-out),
@@ -302,100 +477,51 @@
 }
 
 .fnx-console[data-open="false"] .fnx-console__toggle {
+    right: var(--panel-gutter);
     color: var(--color-primary);
     border-color: var(--color-primary);
     box-shadow: var(--shadow-glow);
 }
 
-/* ===== Avisos (toast propio, sustituye a window.alert) ===== */
-.fnx-toast-stack {
-    position: fixed;
-    bottom: calc(var(--space-5) + 5rem);
-    left: 50%;
-    transform: translateX(-50%);
-
-    z-index: var(--z-toast);
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-2);
-
-    pointer-events: none;
-}
-
-.fnx-toast {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-
-    max-width: min(520px, calc(100vw - var(--space-6)));
-    padding: var(--space-2) var(--space-4);
-
-    font-size: var(--text-sm);
-    color: var(--color-text);
-
-    background: var(--color-overlay);
-    border: 1px solid var(--color-border-default);
-    border-left: 2px solid var(--color-primary);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-panel);
-
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-
-    opacity: 0;
-    transform: translateY(var(--space-2));
-    transition:
-        opacity var(--duration-base) var(--ease-out),
-        transform var(--duration-base) var(--ease-out);
-}
-
-.fnx-toast[data-state="visible"] {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.fnx-toast[data-tone="danger"] {
-    border-left-color: var(--color-danger);
-    background: var(--color-danger-muted);
-}
-
-.fnx-toast__code {
-    font-family: var(--font-mono);
-    color: var(--color-primary);
-}
-
-.fnx-toast[data-tone="danger"] .fnx-toast__code {
-    color: var(--color-danger);
-}
-
 /* ===== Adaptación a pantallas estrechas ===== */
+/* En móvil la columna derecha pasa a ser una hoja inferior: una columna
+   lateral de ese ancho no dejaría sitio al lienzo ni a la lectura. */
 @media (max-width: 768px) {
     .fnx-console {
-        bottom: var(--space-3);
-        width: calc(100vw - var(--space-4));
+        top: auto;
+        left: 0;
+        width: 100%;
+        height: 54vh;
     }
 
     .fnx-console__panel {
-        padding: var(--space-3);
+        border-left: none;
+        border-top: 1px solid var(--color-border-default);
+        transform-origin: bottom center;
+    }
+
+    .fnx-console[data-open="false"] .fnx-console__panel {
+        transform: translateY(6%);
+    }
+
+    .ai-canvas-wrapper {
+        right: 0;
+        bottom: 54vh;
+        height: auto;
+    }
+
+    .fnx-console__toggle {
+        right: var(--panel-gutter);
+        bottom: calc(54vh + var(--panel-gutter));
+        top: auto;
+    }
+
+    .fnx-console[data-open="false"] .fnx-console__toggle {
+        right: var(--panel-gutter);
+        bottom: var(--panel-gutter);
     }
 
     .fnx-console__list {
-        max-height: 168px;
-    }
-
-    .fnx-console__option {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 2px;
-    }
-
-    .fnx-console__option-desc {
-        white-space: normal;
-    }
-
-    .fnx-toast-stack {
-        bottom: calc(var(--space-3) + 4.5rem);
+        max-height: 26vh;
     }
 }

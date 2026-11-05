@@ -216,6 +216,23 @@ def main():
                    page.eval_on_selector_all(".fnx-console__option", "els => els.length") > 0,
                    f"{page.eval_on_selector_all('.fnx-console__option', 'els => els.length')} comandos listados")
 
+        # ===== Distribución en dos columnas =====
+        layout = page.evaluate("""() => {
+            const panel = document.querySelector('#fnx-console-panel').getBoundingClientRect();
+            const canvas = document.querySelector('#ai-canvas-container').getBoundingClientRect();
+            return {
+                panelLeft: panel.left, panelRight: panel.right,
+                canvasLeft: canvas.left, canvasRight: canvas.right,
+                width: window.innerWidth
+            };
+        }""")
+        audit.step("La consola está en la columna derecha",
+                   layout["panelLeft"] > layout["width"] / 2,
+                   f"panel desde x={layout['panelLeft']:.0f} de {layout['width']}px")
+        audit.step("El lienzo queda a la izquierda",
+                   layout["canvasRight"] <= layout["panelLeft"] + 1,
+                   f"lienzo hasta x={layout['canvasRight']:.0f}, panel desde x={layout['panelLeft']:.0f}")
+
         audit.step("El sprite de iconos SVG propios está presente",
                    page.eval_on_selector_all("#icon-terminal, #icon-upload", "els => els.length") == 2,
                    "icon-terminal + icon-upload")
@@ -262,6 +279,48 @@ def main():
         audit.shot("04-comando-naive")
         audit.frame()
 
+        print("\n== Efecto de escritura ==")
+        page.fill("#ai-input", "#cv")
+        page.keyboard.press("Enter")
+        page.wait_for_timeout(1800)
+
+        typed = page.evaluate("""async () => {
+            const out = document.getElementById('fnx-console-output');
+            const read = () => out.textContent.replace(/\\s+/g, ' ').trim().length;
+            const values = [];
+            let caretSeen = false;
+            const deadline = performance.now() + 6000;
+            while (performance.now() < deadline) {
+                values.push(read());
+                if (out.querySelector('.fnx-log__caret')) caretSeen = true;
+                await new Promise((resolve) => setTimeout(resolve, 120));
+            }
+            return {
+                min: Math.min.apply(null, values),
+                max: Math.max.apply(null, values),
+                caretSeen,
+                inRight: out.getBoundingClientRect().left > window.innerWidth / 2
+            };
+        }""")
+        audit.step("El texto se escribe progresivamente en la columna derecha",
+                   typed["max"] > typed["min"] and typed["inRight"],
+                   f"{typed['min']} -> {typed['max']} caracteres, cursor visto: {typed['caretSeen']}")
+
+        # Ritmo: los temporizadores de Chromium headless van a ~1,7 Hz, así que
+        # la velocidad observada aquí no es representativa de un navegador real.
+        rate = page.evaluate("""async () => {
+            const out = document.getElementById('fnx-console-output');
+            const read = () => out.textContent.replace(/\\s+/g, ' ').trim().length;
+            const a = read();
+            const t0 = performance.now();
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            const b = read();
+            return (b - a) / ((performance.now() - t0) / 1000);
+        }""")
+        audit.step("La escritura avanza de forma continua", rate > 0,
+                   f"{rate:.1f} caracteres/s en headless (los temporizadores van a ~1,7 Hz;"
+                   " en un navegador real el ritmo es de 35-80 ms por carácter)")
+
         print("\n== Comandos de contenido ==")
         for command, name in (("#cv", "cv"), ("#robot", "robot"), ("#reptile", "reptile")):
             page.fill("#ai-input", command)
@@ -279,6 +338,38 @@ def main():
             }""" % name)
             audit.step(f"{command} contiene medios", media > 0, f"{media} con imagen")
 
+            # La escritura debe avanzar. La medida vive dentro de la pagina
+            # para no depender del reloj del navegador sin ralentizar.
+            page.evaluate("""() => {
+                window.__grow = new Promise((resolve) => {
+                    const out = document.getElementById('fnx-console-output');
+                    let node = null;
+                    let first = -1;
+                    const timer = setInterval(() => {
+                        const caret = out.querySelector('.fnx-log__caret');
+                        if (!caret) return;
+                        const el = caret.parentElement;
+                        if (el !== node) {
+                            node = el;
+                            first = el.textContent.length;
+                            return;
+                        }
+                        if (el.textContent.length > first) {
+                            clearInterval(timer);
+                            resolve({ok: true, first, after: el.textContent.length});
+                        }
+                    }, 120);
+                    setTimeout(() => {
+                        clearInterval(timer);
+                        resolve({ok: false, first, after: null});
+                    }, 15000);
+                });
+            }""")
+            grow = page.evaluate("() => window.__grow")
+            audit.step(f"{command} escribe el texto progresivamente",
+                       bool(grow.get("ok")),
+                       f"{grow.get('first')} -> {grow.get('after')} caracteres")
+
             audit.shot(f"05-{name}-presentacion")
             audit.frame()
 
@@ -286,6 +377,31 @@ def main():
             has_slide_canvas = page.evaluate("!!document.querySelector('#ai-canvas-container .fnx-slide')")
             audit.step(f"{command} monta la diapositiva en color", has_slide_canvas,
                        "canvas .fnx-slide presente" if has_slide_canvas else "sin canvas")
+
+            # Un clic en la salida termina la escritura del elemento actual.
+            page.evaluate("""() => {
+                window.__skip = new Promise((resolve) => {
+                    const out = document.getElementById('fnx-console-output');
+                    const timer = setInterval(() => {
+                        const caret = out.querySelector('.fnx-log__caret');
+                        if (!caret) return;
+                        const node = caret.parentElement;
+                        const before = node.textContent.length;
+                        node.click();
+                        const after = node.textContent.length;
+                        clearInterval(timer);
+                        resolve({ok: after > before, before, after});
+                    }, 120);
+                    setTimeout(() => {
+                        clearInterval(timer);
+                        resolve({ok: false, before: null, after: null});
+                    }, 15000);
+                });
+            }""")
+            skipped = page.evaluate("() => window.__skip")
+            audit.step(f"{command} termina la escritura al hacer clic",
+                       bool(skipped.get("ok")),
+                       f"{skipped.get('before')} -> {skipped.get('after')} caracteres")
 
             # Avanzar hasta un medio con imagen para capturarlo.
             page.fill("#ai-input", "#next")
@@ -352,6 +468,31 @@ def main():
         audit.shot("07-cv-gif-animado")
         audit.frame()
         audit.frame()
+
+        print("\n== Scroll propio ==")
+        page.mouse.move(5, 5)
+        page.wait_for_timeout(200)
+        scroll = page.evaluate("""() => {
+            const out = document.getElementById('fnx-console-output');
+            // Con contenido largo la columna debe poder desplazarse.
+            const probe = document.createElement('p');
+            probe.textContent = ('palabra con espacios para que envuelva. ').repeat(120);
+            out.appendChild(probe);
+            const scrollable = out.scrollHeight > out.clientHeight;
+            out.removeChild(probe);
+            return {
+                scrollable,
+                overflow: getComputedStyle(out).overflowY,
+                thumb: getComputedStyle(out, '::-webkit-scrollbar-thumb').backgroundColor,
+                width: getComputedStyle(out, '::-webkit-scrollbar').width
+            };
+        }""")
+        audit.step("La columna de resultado tiene scroll propio",
+                   scroll["overflow"] == "auto" and scroll["scrollable"],
+                   f"overflow-y={scroll['overflow']}, barra de {scroll['width']}")
+        audit.step("La barra de scroll usa nuestro estilo",
+                   scroll["thumb"] == "rgb(58, 68, 79)",
+                   f"pulgar {scroll['thumb']} (--color-border-strong)")
 
         print("\n== Plegado de la consola ==")
         page.click("#fnx-console-toggle")

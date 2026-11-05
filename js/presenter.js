@@ -6,58 +6,20 @@
     const MEDIA_DURATION = 6600;
     const MEDIA_TIMEOUT_GRACE = 12000;
     const LIVE_INTERVAL = 100;
-    const MAX_BODY_LINES = 4;
+    const READING_PAUSE = 1400;
 
-    // ===== DISEÑO DE LA DIAPOSITIVA =====
-    // El lienzo ocupa el 80 % del viewport y se centra. La consola se ancla
-    // abajo, así que el contenido se compone en la banda superior para que
-    // siga legible aunque la paleta de comandos esté desplegada.
-    const MEDIA_IMAGE_TOP = 0.03;
-    const MEDIA_IMAGE_MAX_HEIGHT = 0.38;
-    const MEDIA_TITLE_GAP = 0.04;
-    const MEDIA_BODY_TOP = 0.50;
-    const TEXT_TITLE_TOP = 0.16;
-    const TEXT_BODY_TOP = 0.26;
+    // ===== DISEÑO DE LA DIAPOSITIVA ===== //
+    // El lienzo visible ocupa la zona izquierda; el texto se escribe en la
+    // columna derecha. La imagen se dibuja a color y su silueta alimenta la
+    // matriz de celdas del motor.
+    const MEDIA_IMAGE_TOP = 0.04;
+    const MEDIA_IMAGE_MAX_HEIGHT = 0.72;
+    const MEDIA_IMAGE_MAX_WIDTH = 0.94;
 
     const FONT_DISPLAY = "'Ethnocentric', 'Arial Narrow', Arial, sans-serif";
     const FONT_BODY = "'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 
     // ===== UTILIDADES DE TEXTO ===== //
-    function roundRect(ctx, x, y, w, h, r) {
-        const radius = Math.min(r, w / 2, h / 2);
-        ctx.beginPath();
-        ctx.moveTo(x + radius, y);
-        ctx.arcTo(x + w, y, x + w, y + h, radius);
-        ctx.arcTo(x + w, y + h, x, y + h, radius);
-        ctx.arcTo(x, y + h, x, y, radius);
-        ctx.arcTo(x, y, x + w, y, radius);
-        ctx.closePath();
-    }
-
-    function wrapLines(ctx, text, maxWidth) {
-        const paragraphs = String(text || "").split(/\n+/);
-        const lines = [];
-
-        paragraphs.forEach((paragraph) => {
-            const words = paragraph.split(/\s+/).filter(Boolean);
-            let line = "";
-
-            words.forEach((word) => {
-                const probe = line ? `${line} ${word}` : word;
-                if (ctx.measureText(probe).width > maxWidth && line) {
-                    lines.push(line);
-                    line = word;
-                } else {
-                    line = probe;
-                }
-            });
-
-            if (line) lines.push(line);
-        });
-
-        return lines;
-    }
-
     function ellipsize(ctx, text, maxWidth) {
         if (ctx.measureText(text).width <= maxWidth) return text;
         let cut = text;
@@ -80,22 +42,33 @@
             this.liveTimer = null;
 
             this.container = document.getElementById("ai-canvas-container");
+            this.output = document.getElementById("fnx-console-output");
 
-            // Lienzo visible: la diapositiva en color (imagen + texto).
+            // Lienzo visible: la imagen a color de la diapositiva.
             this.slideCanvas = document.createElement("canvas");
             this.slideCtx = this.slideCanvas.getContext("2d");
 
-            // Lienzo de máscara: alimenta la matriz de celdas del motor.
+            // Lienzo de máscara: la silueta que el motor rasteriza como celdas.
             this.maskCanvas = document.createElement("canvas");
             this.maskCtx = this.maskCanvas.getContext("2d");
 
             this.image = null;
             this.silhouette = null;
             this.silhouetteIsLive = false;
+            this.currentSlide = null;
             this.mounted = false;
+
+            this.typewriter = new window.FenixTypewriter({
+                onUpdate: () => this.scrollOutput()
+            });
 
             this.handleResize = this.handleResize.bind(this);
             window.addEventListener("resize", this.handleResize);
+
+            // Un clic sobre la salida completa la escritura al instante.
+            if (this.output) {
+                this.output.addEventListener("click", () => this.typewriter.finish());
+            }
         }
 
         // ===== Ciclo de vida ===== //
@@ -112,6 +85,7 @@
         stop() {
             this.stopTimer();
             this.stopLive();
+            this.typewriter.stop();
             this.unmount();
             this.deck = null;
             this.index = -1;
@@ -132,18 +106,199 @@
 
             const slide = this.deck.slides[this.index];
             this.onSlide(slide, this.index, this.deck);
-
-            if (slide.kind === "media") {
-                this.showMedia(slide);
-            } else {
-                this.showText(slide);
-            }
+            this.render(slide);
         }
 
         prev() {
             if (!this.deck || this.index <= 0) return;
             this.index -= 2;
             this.next();
+        }
+
+        /**
+         * Compone la diapositiva: la imagen a la izquierda y la narración
+         * escrita a la derecha. La diapositiva avanza cuando la escritura
+         * termina y el espectador ha tenido tiempo de leer.
+         */
+        render(slide) {
+            this.stopTimer();
+            this.typewriter.stop();
+
+            // El medio y la narración van en paralelo: el texto se escribe
+            // mientras la imagen carga y nunca se interrumpe.
+            const media = slide.kind === "media"
+                ? this.showMedia(slide)
+                : Promise.resolve(this.showTextShape(slide));
+
+            const narration = this.typeNarrative(slide);
+
+            Promise.all([media, narration]).then(() => {
+                this.scheduleNext(READING_PAUSE);
+            });
+        }
+
+        // ===== Lado izquierdo: el render ===== //
+
+        showTextShape(slide) {
+            this.stopLive();
+            this.image = null;
+            this.silhouette = null;
+            this.silhouetteIsLive = false;
+
+            // El titular se rasteriza en el lienzo con el efecto de la casa.
+            const title = slide.title || slide.text || "";
+            if (this.stage && title) this.stage.text(title);
+        }
+
+        showMedia(slide) {
+            // Si el medio tarda demasiado se sigue sin él: el texto es lo
+            // importante y no puede quedarse esperando.
+            return this.withTimeout(this.loadImage(slide.src), MEDIA_TIMEOUT_GRACE)
+                .then((image) => {
+                    if (!image) {
+                        this.showTextShape(slide);
+                        return;
+                    }
+
+                    this.image = image;
+                    this.silhouette = this.toSilhouette(image);
+                    this.paintCurrent(slide);
+
+                    if (slide.live) {
+                        this.startLive();
+                    } else {
+                        this.stopLive();
+                    }
+                })
+                .catch(() => {
+                    this.showTextShape(slide);
+                });
+        }
+
+        withTimeout(promise, ms) {
+            return Promise.race([
+                promise,
+                new Promise((resolve) => setTimeout(() => resolve(null), ms))
+            ]);
+        }
+
+        paintCurrent(slide) {
+            const current = slide || (this.deck && this.deck.slides[this.index]);
+            if (!current) return;
+
+            this.currentSlide = current;
+
+            if (current.kind === "media" && this.image) {
+                this.paintMediaSlide(current);
+            } else {
+                this.slideCtx.clearRect(0, 0, this.slideCanvas.width, this.slideCanvas.height);
+                this.maskCtx.clearRect(0, 0, this.maskCanvas.width, this.maskCanvas.height);
+            }
+
+            // La máscara es lo que el motor rasteriza como celdas.
+            if (this.stage) {
+                this.stage.display(this.maskCanvas, {
+                    live: !!(current.live && this.image)
+                });
+            }
+        }
+
+        paintMediaSlide(slide) {
+            const rect = this.imageRect();
+
+            // Imagen a color, sobre fondo transparente.
+            this.slideCtx.clearRect(0, 0, this.slideCanvas.width, this.slideCanvas.height);
+            this.slideCtx.drawImage(this.image, rect.x, rect.y, rect.w, rect.h);
+
+            // La máscara solo lleva la silueta: el texto vive en la columna
+            // derecha y no debe rasterizarse aquí.
+            this.maskCtx.clearRect(0, 0, this.maskCanvas.width, this.maskCanvas.height);
+            const source = slide.live && this.silhouetteIsLive ? this.image : this.silhouette;
+            if (source) {
+                this.maskCtx.drawImage(source, rect.x, rect.y, rect.w, rect.h);
+            }
+        }
+
+        // ===== Lado derecho: la narración ===== //
+
+        async typeNarrative(slide) {
+            const out = this.output;
+            if (!out) return;
+
+            // Solo se conserva la narración de la diapositiva en curso: el
+            // resultado siempre es legible de un vistazo.
+            out.querySelectorAll(".fnx-log").forEach((node) => {
+                node.parentNode.removeChild(node);
+            });
+
+            const log = document.createElement("div");
+            log.className = "fnx-log";
+            out.appendChild(log);
+
+            const title = slide.title || slide.text || "";
+            if (title) {
+                const node = document.createElement("p");
+                node.className = "fnx-log__title";
+                log.appendChild(node);
+
+                // Si la escritura se cancela (cambio de diapositiva o parada)
+                // no se sigue con el resto del texto.
+                const written = await this.typewriter.type(title, { element: node });
+                if (!written) return;
+            }
+
+            if (slide.kind === "bullets" && slide.items) {
+                const list = document.createElement("ul");
+                list.className = "fnx-log__items";
+                log.appendChild(list);
+
+                for (const item of slide.items) {
+                    const node = document.createElement("li");
+                    node.className = "fnx-log__body";
+                    list.appendChild(node);
+
+                    const written = await this.typewriter.type(item, { element: node });
+                    if (!written) return;
+                }
+            } else if (slide.kind === "links" && slide.items) {
+                const list = document.createElement("div");
+                list.className = "fnx-log__links";
+                log.appendChild(list);
+
+                for (const item of slide.items) {
+                    const link = document.createElement("div");
+                    link.className = "fnx-log__link";
+
+                    const label = document.createElement("span");
+                    label.className = "fnx-log__link-label";
+                    const url = document.createElement("span");
+                    url.className = "fnx-log__link-url";
+
+                    link.appendChild(label);
+                    link.appendChild(url);
+                    list.appendChild(link);
+
+                    const labelWritten = await this.typewriter.type(item.text, { element: label });
+                    if (!labelWritten) return;
+
+                    const urlWritten = await this.typewriter.type(item.url, { element: url });
+                    if (!urlWritten) return;
+                }
+            } else if (slide.body) {
+                const node = document.createElement("p");
+                node.className = "fnx-log__body";
+                log.appendChild(node);
+
+                const written = await this.typewriter.type(slide.body, { element: node });
+                if (!written) return;
+            }
+
+            this.scrollOutput();
+        }
+
+        scrollOutput() {
+            if (!this.output) return;
+            this.output.scrollTop = this.output.scrollHeight;
         }
 
         // ===== Montaje del lienzo visible ===== //
@@ -189,268 +344,6 @@
             }
         }
 
-        // ===== Render ===== //
-
-        showText(slide) {
-            this.stopLive();
-            this.image = null;
-            this.silhouette = null;
-            this.silhouetteIsLive = false;
-            this.paintCurrent(slide);
-            this.scheduleNext(SLIDE_DURATION);
-        }
-
-        showMedia(slide) {
-            // Red de seguridad: si el medio nunca llega, la presentación
-            // continúa igualmente.
-            this.scheduleNext(MEDIA_DURATION + MEDIA_TIMEOUT_GRACE);
-
-            this.loadImage(slide.src).then((image) => {
-                this.image = image;
-                this.silhouette = this.toSilhouette(image);
-                this.paintCurrent(slide);
-
-                if (slide.live) {
-                    this.startLive();
-                } else {
-                    this.stopLive();
-                }
-
-                // El plazo de la diapositiva arranca cuando el medio está
-                // listo: con red lenta el contenido no se pierde.
-                this.scheduleNext(MEDIA_DURATION);
-            }).catch(() => {
-                this.paintTextSlide({
-                    kind: "section",
-                    title: slide.title || slide.caption || "",
-                    body: slide.body || "Contenido no disponible"
-                });
-                this.scheduleNext(SLIDE_DURATION);
-            });
-        }
-
-        paintCurrent(slide) {
-            const current = slide || (this.deck && this.deck.slides[this.index]);
-            if (!current) return;
-
-            this.currentSlide = current;
-
-            if (current.kind === "media" && this.image) {
-                this.paintMediaSlide(current);
-            } else {
-                this.paintTextSlide(current);
-            }
-
-            // La máscara es lo que el motor rasteriza como celdas.
-            if (this.stage) {
-                this.stage.display(this.maskCanvas, {
-                    live: !!(current.live && this.image)
-                });
-            }
-        }
-
-        paintMediaSlide(slide) {
-            const ctx = this.slideCtx;
-            const W = this.slideCanvas.width;
-            const H = this.slideCanvas.height;
-
-            ctx.clearRect(0, 0, W, H);
-
-            const rect = this.imageRect();
-
-            // Imagen a color, sobre fondo transparente.
-            ctx.drawImage(this.image, rect.x, rect.y, rect.w, rect.h);
-
-            this.paintHeadline(ctx, slide.title || slide.caption || "", rect.bottom);
-            this.paintBody(ctx, slide.body || "");
-
-            this.paintMask(slide, rect);
-        }
-
-        paintTextSlide(slide) {
-            const W = this.slideCanvas.width;
-            const H = this.slideCanvas.height;
-
-            this.slideCtx.clearRect(0, 0, W, H);
-            this.drawTextSlide(this.slideCtx, slide, {
-                primary: this.token("--color-primary"),
-                text: this.token("--color-text"),
-                muted: this.token("--color-text-muted")
-            });
-
-            this.maskCtx.clearRect(0, 0, W, H);
-            this.drawTextSlide(this.maskCtx, slide, {
-                primary: "#ffffff",
-                text: "#ffffff",
-                muted: "#ffffff"
-            });
-        }
-
-        /**
-         * Layout único de las diapositivas de texto: se dibuja dos veces,
-         * una en color sobre el lienzo visible y otra en blanco sobre la
-         * máscara que consume el motor. Así la composición nunca diverge.
-         */
-        drawTextSlide(ctx, slide, palette) {
-            const W = this.slideCanvas.width;
-            const H = this.slideCanvas.height;
-
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-
-            if (slide.kind === "title") {
-                ctx.fillStyle = palette.primary;
-                ctx.font = `700 ${Math.round(H * 0.13)}px ${FONT_DISPLAY}`;
-                ctx.fillText(ellipsize(ctx, slide.text || "", W * 0.86), W / 2, H * 0.26);
-
-                ctx.fillStyle = palette.muted;
-                ctx.font = `400 ${Math.round(H * 0.038)}px ${FONT_BODY}`;
-                const lines = wrapLines(ctx, slide.subtitle || "", W * 0.74).slice(0, 3);
-                lines.forEach((line, index) => {
-                    ctx.fillText(line, W / 2, H * 0.40 + index * H * 0.05);
-                });
-                return;
-            }
-
-            let top = H * TEXT_TITLE_TOP;
-
-            if (slide.title) {
-                ctx.fillStyle = palette.primary;
-                ctx.font = `700 ${Math.round(H * 0.075)}px ${FONT_DISPLAY}`;
-                const titleLines = wrapLines(ctx, slide.title, W * 0.86).slice(0, 2);
-                titleLines.forEach((line, index) => {
-                    ctx.fillText(line, W / 2, top + index * H * 0.085);
-                });
-                top += titleLines.length * H * 0.085 + H * 0.02;
-            }
-
-            if (slide.kind === "bullets" && slide.items) {
-                ctx.font = `400 ${Math.round(H * 0.032)}px ${FONT_BODY}`;
-                ctx.textAlign = "left";
-                slide.items.slice(0, MAX_BODY_LINES + 2).forEach((item, index) => {
-                    const y = top + index * H * 0.048;
-                    ctx.fillStyle = palette.primary;
-                    ctx.fillText("—", W * 0.16, y);
-                    ctx.fillStyle = palette.text;
-                    ctx.fillText(ellipsize(ctx, item, W * 0.68), W * 0.20, y);
-                });
-                ctx.textAlign = "center";
-                return;
-            }
-
-            if (slide.kind === "links" && slide.items) {
-                ctx.font = `400 ${Math.round(H * 0.030)}px ${FONT_BODY}`;
-                ctx.textAlign = "left";
-                slide.items.slice(0, 8).forEach((item, index) => {
-                    const y = top + index * H * 0.046;
-                    ctx.fillStyle = palette.primary;
-                    ctx.fillText(item.text, W * 0.18, y);
-                    ctx.fillStyle = palette.muted;
-                    ctx.fillText(ellipsize(ctx, item.url, W * 0.52), W * 0.40, y);
-                });
-                ctx.textAlign = "center";
-                return;
-            }
-
-            if (slide.body) {
-                ctx.fillStyle = palette.text;
-                ctx.font = `400 ${Math.round(H * 0.034)}px ${FONT_BODY}`;
-                const lines = wrapLines(ctx, slide.body, W * 0.80).slice(0, MAX_BODY_LINES + 2);
-                lines.forEach((line, index) => {
-                    ctx.fillText(line, W / 2, top + index * H * 0.048);
-                });
-            }
-        }
-
-        paintHeadline(ctx, title, bottom) {
-            if (!title) return;
-
-            const W = this.slideCanvas.width;
-            const H = this.slideCanvas.height;
-
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillStyle = this.token("--color-primary");
-            ctx.font = `700 ${Math.round(H * 0.058)}px ${FONT_DISPLAY}`;
-
-            const lines = wrapLines(ctx, title, W * 0.86).slice(0, 2);
-            lines.forEach((line, index) => {
-                ctx.fillText(line, W / 2, bottom + H * MEDIA_TITLE_GAP + index * H * 0.062);
-            });
-        }
-
-        paintBody(ctx, body) {
-            if (!body) return;
-
-            const W = this.slideCanvas.width;
-            const H = this.slideCanvas.height;
-
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillStyle = this.token("--color-text");
-            ctx.font = `400 ${Math.round(H * 0.028)}px ${FONT_BODY}`;
-
-            const lines = wrapLines(ctx, body, W * 0.84).slice(0, MAX_BODY_LINES);
-            const start = H * MEDIA_BODY_TOP + (lines.length - 1) * H * 0.038;
-
-            lines.forEach((line, index) => {
-                ctx.fillText(line, W / 2, start + index * H * 0.038);
-            });
-        }
-
-        // ===== Máscara para la matriz de celdas ===== //
-
-        paintMask(slide, rect) {
-            const ctx = this.maskCtx;
-            const W = this.maskCanvas.width;
-            const H = this.maskCanvas.height;
-
-            ctx.clearRect(0, 0, W, H);
-
-            if (this.silhouette) {
-                // Si la imagen ya traía canal alfa, la silueta es la propia
-                // imagen: así el GIF animado sigue su forma fotograma a
-                // fotograma. Las fotos (sin alfa) usan la silueta fija.
-                const source = slide.live && this.silhouetteIsLive ? this.image : this.silhouette;
-                ctx.drawImage(source, rect.x, rect.y, rect.w, rect.h);
-            }
-            // El texto se dibuja en blanco opaco: así la máscara lo incluye
-            // con alpha pleno y el motor lo rasteriza como celdas.
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillStyle = "#ffffff";
-
-            if (slide.title || slide.caption) {
-                ctx.font = `700 ${Math.round(H * 0.058)}px ${FONT_DISPLAY}`;
-                const lines = wrapLines(ctx, slide.title || slide.caption, W * 0.86).slice(0, 2);
-                lines.forEach((line, index) => {
-                    ctx.fillText(line, W / 2, rect.bottom + H * MEDIA_TITLE_GAP + index * H * 0.062);
-                });
-            }
-
-            if (slide.body) {
-                ctx.font = `400 ${Math.round(H * 0.028)}px ${FONT_BODY}`;
-                const lines = wrapLines(ctx, slide.body, W * 0.84).slice(0, MAX_BODY_LINES);
-                const start = H * 0.84 - (lines.length - 1) * H * 0.038;
-                lines.forEach((line, index) => {
-                    ctx.fillText(line, W / 2, start + index * H * 0.038);
-                });
-            }
-        }
-
-        /**
-         * Repinta únicamente la región de la imagen. El texto de la
-         * diapositiva vive por debajo y no se solapa, así que el bucle en
-         * vivo no necesita recomponer la maqueta completa.
-         */
-        repaintImageRegion(rect, source) {
-            this.slideCtx.clearRect(rect.x, rect.y, rect.w, rect.h);
-            this.slideCtx.drawImage(source, rect.x, rect.y, rect.w, rect.h);
-
-            this.maskCtx.clearRect(rect.x, rect.y, rect.w, rect.h);
-            this.maskCtx.drawImage(source, rect.x, rect.y, rect.w, rect.h);
-        }
-
         // ===== Imagen ===== //
 
         imageRect() {
@@ -460,7 +353,7 @@
             const sourceWidth = this.image.naturalWidth || this.image.width;
             const sourceHeight = this.image.naturalHeight || this.image.height;
 
-            const maxWidth = W * 0.88;
+            const maxWidth = W * MEDIA_IMAGE_MAX_WIDTH;
             const maxHeight = H * MEDIA_IMAGE_MAX_HEIGHT;
 
             const scale = Math.min(maxWidth / sourceWidth, maxHeight / sourceHeight);
@@ -469,10 +362,10 @@
 
             return {
                 x: (W - width) / 2,
-                y: H * MEDIA_IMAGE_TOP,
+                y: (H - height) / 2,
                 w: width,
                 h: height,
-                bottom: H * MEDIA_IMAGE_TOP + height
+                bottom: (H + height) / 2
             };
         }
 
@@ -485,8 +378,7 @@
                 image.onload = () => {
                     // El navegador solo decodifica los fotogramas siguientes de
                     // un GIF si la imagen está en el árbol de render. Se ancla
-                    // fuera de pantalla y casi transparente para que el GIF
-                    // siga vivo sin verse en el lienzo.
+                    // fuera de pantalla para que el GIF siga vivo.
                     image.setAttribute("aria-hidden", "true");
                     image.style.cssText = [
                         "position:absolute",
@@ -530,6 +422,7 @@
                     break;
                 }
             }
+
             if (hasAlpha) {
                 // Con canal alfa la imagen ya ES la silueta: se puede redibujar
                 // en vivo para que un GIF animado cambie de forma.
@@ -555,8 +448,9 @@
                 const rect = this.imageRect();
                 const source = this.silhouetteIsLive ? this.image : this.silhouette;
 
-                // Solo se repinta la imagen: el texto no se solapa con ella.
-                this.repaintImageRegion(rect, this.image);
+                this.slideCtx.clearRect(rect.x, rect.y, rect.w, rect.h);
+                this.slideCtx.drawImage(this.image, rect.x, rect.y, rect.w, rect.h);
+
                 this.maskCtx.clearRect(rect.x, rect.y, rect.w, rect.h);
                 this.maskCtx.drawImage(source, rect.x, rect.y, rect.w, rect.h);
 
@@ -570,21 +464,6 @@
                 clearInterval(this.liveTimer);
                 this.liveTimer = null;
             }
-        }
-
-        // ===== Utilidades ===== //
-
-        token(name) {
-            const fallback = {
-                "--color-primary": "#F25C1F",
-                "--color-text": "#F2F2F0",
-                "--color-text-muted": "rgba(242,242,240,0.62)"
-            };
-            if (typeof window === "undefined" || !window.getComputedStyle) {
-                return fallback[name] || "#FFFFFF";
-            }
-            const value = getComputedStyle(document.documentElement).getPropertyValue(name);
-            return (value && value.trim()) || fallback[name] || "#FFFFFF";
         }
 
         scheduleNext(duration) {

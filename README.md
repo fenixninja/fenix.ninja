@@ -7,8 +7,12 @@ Sitio estático (GitHub Pages). Sin build, sin dependencias, sin frameworks.
 
 ## Consola de comandos
 
-La consola es la única capa de interfaz. Se despliega en la parte inferior y
-funciona como una shell:
+La consola es la única capa de interfaz y ocupa una **columna fija a la
+derecha**; el lienzo con las imágenes se queda a la izquierda. En pantallas
+pequeñas (≤ 768 px) la consola pasa a ser una hoja inferior.
+
+La columna funciona como una shell: arriba el **resultado** (el eco de cada
+comando y la narración de la presentación) y abajo el **campo de entrada**.
 
 | Tecla | Acción |
 | --- | --- |
@@ -17,8 +21,17 @@ funciona como una shell:
 | `Tab` | Completa el comando resaltado |
 | `Esc` | Cierra la paleta |
 | `` ` `` | Plegar o desplegar la consola |
+| Clic en el resultado | Termina la escritura al instante |
 
-El botón circular de la derecha pliega la consola y devuelve el lienzo al espectador.
+El botón circular de la esquina pliega la consola y devuelve el lienzo al
+espectador.
+
+### Máquina de escribir
+
+El texto de cada diapositiva se escribe en la columna de resultado con efecto
+de máquina de escribir: 35 ms por carácter con variación aleatoria y pausas de
+240 ms tras la puntuación. La columna de resultado tiene su propio
+desplazamiento, con la barra de scroll estilada con los tokens del sitio.
 
 ### Comandos
 
@@ -53,6 +66,7 @@ js/ai-canvas.js         Motor de partículas: celdas, electrones, registro de co
 js/presenter.js         Presentador de contenidos (composición de diapositivas)
 js/content.js           Carga de guiones y ciclo de la presentación
 js/console.js           Consola: paleta, historial, avisos, accesibilidad
+js/typewriter.js        Máquina de escribir para la columna de resultado
 data/cv.json            Guion del CV
 data/robot.json         Guion de Nibble
 data/reptile.json        Guion de Nosystat

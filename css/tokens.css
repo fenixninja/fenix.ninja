@@ -85,4 +85,9 @@
     /* ===== Métricas del lienzo (contraste con las constantes JS) ===== */
     --canvas-cell-size: 8px;
     --canvas-border-width: 2px;
+
+    /* ===== Layout ===== */
+    /* Columna derecha: consola de comandos y resultado. El lienzo ocupa el resto. */
+    --panel-width: clamp(360px, 36vw, 560px);
+    --panel-gutter: 20px;
 }

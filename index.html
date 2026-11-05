@@ -49,6 +49,16 @@
                 <span class="fnx-console__count" id="fnx-console-count"></span>
             </div>
 
+            <div class="fnx-console__output" id="fnx-console-output" role="log" aria-live="polite"></div>
+
+            <ul
+                class="fnx-console__list"
+                id="fnx-command-list"
+                role="listbox"
+                aria-label="Comandos disponibles"
+                hidden
+            ></ul>
+
             <div class="fnx-console__field">
                 <svg class="fnx-icon" aria-hidden="true"><use href="#icon-terminal"></use></svg>
                 <input
@@ -77,14 +87,6 @@
                 </button>
             </div>
 
-            <ul
-                class="fnx-console__list"
-                id="fnx-command-list"
-                role="listbox"
-                aria-label="Comandos disponibles"
-                hidden
-            ></ul>
-
             <p class="fnx-console__hint" id="fnx-console-hint">
                 <span><kbd>Enter</kbd> ejecutar</span>
                 <span><kbd>↑</kbd><kbd>↓</kbd> navegar</span>
@@ -110,6 +112,7 @@
 
     <!-- Scripts -->
     <script src="js/ai-canvas.js"></script>
+    <script src="js/typewriter.js"></script>
     <script src="js/presenter.js"></script>
     <script src="js/content.js"></script>
     <script src="js/console.js"></script>

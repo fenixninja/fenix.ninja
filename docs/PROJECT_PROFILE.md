@@ -65,6 +65,10 @@ proceso aplican y cuáles quedan fuera de alcance.
 - Las imágenes remotas se cargan con `crossOrigin="anonymous"`. Sin ello el
   lienzo quedaría contaminado y `getImageData()` lanzaría `SecurityError`.
 - El presentador compone dos lienzos sincronizados: el visible (color) y la
-  máscara (silueta + texto) que el motor rasteriza como celdas.
+  máscara (silueta) que el motor rasteriza como celdas.
+- El texto ya no se dibuja sobre el lienzo: se escribe en la columna de
+  resultado de la consola, a la derecha, con efecto de máquina de escribir.
+- La narración y el medio van en paralelo: la escritura nunca se interrumpe por
+  una imagen lenta y la diapositiva avanza al terminar de leerse.
 - El plazo de una diapositiva con medio arranca cuando el medio está listo, no
   cuando se anuncia: con red lenta el contenido no se pierde.

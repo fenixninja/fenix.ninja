@@ -27,11 +27,13 @@ body {
 }
 
 /* ===== Contenedor principal del lienzo ===== */
+/* El lienzo ocupa la zona izquierda: la columna derecha es la consola. */
 .ai-canvas-wrapper {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
+    right: var(--panel-width);
+    width: auto;
     height: 100%;
     background: var(--color-bg);
     overflow: hidden;

@@ -55,19 +55,53 @@ operativo como iconografía funcional.**
 - `#icon-terminal` — marca de la consola y botón de entrada.
 - `#icon-upload` — subida de imagen.
 
+## Columnas del lienzo y de la consola
+
+La pantalla se divide en dos columnas. La consola es una columna fija a la
+derecha y el lienzo ocupa el resto:
+
+| Zona | Medida |
+| --- | --- |
+| Columna de la consola | `--panel-width`: `clamp(360px, 36vw, 560px)` |
+| Lienzo | desde `0` hasta `var(--panel-width)` por la derecha |
+| Móvil (`≤ 768px`) | la consola pasa a ser una hoja inferior de `54vh` |
+
+El texto ya no se dibuja sobre el lienzo: la columna derecha es el lugar donde
+aparece. El lienzo conserva la imagen a color y la silueta que alimenta la
+matriz de celdas.
+
+## Narración con efecto de máquina de escribir
+
+La columna de resultado escribe el texto de cada diapositiva como una máquina de
+escribir humana (`js/typewriter.js`):
+
+| Parámetro | Valor | Motivo |
+| --- | --- | --- |
+| Retardo base | `35 ms` por carácter | ritmo legible |
+| Variación | `0–45 ms` aleatorios | nunca es un intervalo fijo |
+| Pausa de puntuación | `240 ms` tras `. , ; : ! ? …` | respira en las frases |
+
+El cursor `.fnx-log__caret` parpadea mientras se escribe. Un clic sobre la
+columna de resultado completa la escritura al instante; cambiar de diapositiva
+la cancela. La diapositiva avanza cuando la escritura termina más una pausa de
+lectura de `1400 ms`.
+
+La columna de resultado es un `role="log"` con `aria-live="polite"` y tiene su
+propia barra de desplazamiento, estilada con los tokens del sitio (pulgar
+`--color-border-strong`, `--color-primary` al pasar el ratón).
+
 ## Diapositivas del presentador
 
-El presentador compone cada diapositiva sobre un lienzo del 80 % del viewport
-centrado. La consola se ancla abajo, así que el contenido se compone en la banda
-superior para que siga legible con la paleta desplegada:
+El presentador compone cada diapositiva sobre un lienzo del 80 % del área
+izquierda:
 
 | Zona | Fracción del lienzo |
 | --- | --- |
-| Imagen | `0.03` → `0.41` |
-| Titular | bajo la imagen + `0.04` |
-| Cuerpo | `0.50` |
+| Imagen | `0.04` → `0.76` de alto, `0.94` de ancho máximo |
+| Titular y cuerpo | columna derecha (narración) |
 | Diapositivas de texto | titular `0.16`, cuerpo `0.26` |
 
-El motor rasteriza la **máscara** de cada diapositiva (silueta + texto en blanco)
+El motor rasteriza la **máscara** de cada diapositiva (silueta de la imagen)
 como celdas; el color lo compone el lienzo visible. Ambos lienzos comparten
-coordenadas, de modo que imagen y efecto nunca divergen.
+coordenadas, de modo que imagen y efecto nunca divergen. El texto se escribe en
+la columna de la consola, nunca sobre el lienzo.
