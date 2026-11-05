@@ -11,8 +11,10 @@ La consola es la única capa de interfaz y ocupa una **columna fija a la
 derecha**; el lienzo con las imágenes se queda a la izquierda. En pantallas
 pequeñas (≤ 768 px) la consola pasa a ser una hoja inferior.
 
-La columna funciona como una shell: arriba el **resultado** (el eco de cada
-comando y la narración de la presentación) y abajo el **campo de entrada**.
+La columna funciona como una shell: arriba la **imagen de la diapositiva** y
+después el **resultado** (el eco de cada comando y la narración de la
+presentación); abajo, el **campo de entrada**. Al retirar la consola el lienzo
+recupera todo el ancho: no queda banda negra.
 
 | Tecla | Acción |
 | --- | --- |
@@ -29,9 +31,10 @@ espectador.
 ### Máquina de escribir
 
 El texto de cada diapositiva se escribe en la columna de resultado con efecto
-de máquina de escribir: 35 ms por carácter con variación aleatoria y pausas de
-240 ms tras la puntuación. Las imágenes de la izquierda se revelan con el
-mismo ritmo, de izquierda a derecha, y su render final no cambia.
+de máquina de escribir: 17 ms por carácter con variación aleatoria y pausas de
+120 ms tras la puntuación. Las imágenes **se cargan en la consola** y se
+revelan con el mismo ritmo, de izquierda a derecha, durante 900 ms. En el
+lienzo de la izquierda queda el render de celdas de la silueta.
 
 La columna de resultado tiene su propio desplazamiento, con la barra de scroll
 estilada con los tokens del sitio. Un clic sobre el resultado termina la

@@ -63,12 +63,14 @@ derecha y el lienzo ocupa el resto:
 | Zona | Medida |
 | --- | --- |
 | Columna de la consola | `--panel-width`: `clamp(360px, 36vw, 560px)` |
+| Imagen en la consola | `--console-media-height`: `32vh` de alto máximo |
 | Lienzo | desde `0` hasta `var(--panel-width)` por la derecha |
 | Móvil (`≤ 768px`) | la consola pasa a ser una hoja inferior de `54vh` |
 
 El texto ya no se dibuja sobre el lienzo: la columna derecha es el lugar donde
-aparece. El lienzo conserva la imagen a color y la silueta que alimenta la
-matriz de celdas.
+aparece. La consola muestra, de arriba abajo, la imagen de la diapositiva y el
+resultado escrito; el lienzo conserva la silueta que alimenta la matriz de
+celdas.
 
 ## Narración con efecto de máquina de escribir
 
@@ -77,20 +79,26 @@ escribir humana (`js/typewriter.js`):
 
 | Parámetro | Valor | Motivo |
 | --- | --- | --- |
-| Retardo base | `35 ms` por carácter | ritmo legible |
-| Variación | `0–45 ms` aleatorios | nunca es un intervalo fijo |
-| Pausa de puntuación | `240 ms` tras `. , ; : ! ? …` | respira en las frases |
+| Retardo base | `17 ms` por carácter | ritmo legible y fluido |
+| Variación | `0–22 ms` aleatorios | nunca es un intervalo fijo |
+| Pausa de puntuación | `120 ms` tras `. , ; : ! ? …` | respira en las frases |
+| Pausa de lectura | `700 ms` entre diapositivas | mantiene el ritmo |
 
 El cursor `.fnx-log__caret` parpadea mientras se escribe. Un clic sobre la
 columna de resultado completa la escritura al instante; cambiar de diapositiva
 la cancela. La diapositiva avanza cuando la escritura termina más una pausa de
 lectura de `1400 ms`.
 
-Las imágenes de la columna izquierda se revelan con el mismo ritmo: la foto
-aparece de izquierda a derecha durante `1800 ms`, como si se escribiera. El
-avance se mide por tiempo para que un navegador con temporizadores
-estrangulados no alargue la diapositiva. El render final es idéntico al que
-había: la imagen a color sobre la silueta que el motor rasteriza como celdas.
+Las imágenes **se cargan dentro de la consola** (columna derecha), en un
+marco con un velo que las revela de izquierda a derecha durante `900 ms`, al
+mismo ritmo que el texto. El avance del velo se mide por tiempo para que un
+navegador con temporizadores estrangulados no alargue la diapositiva.
+
+En el lienzo de la izquierda queda el **render de celdas** que el motor
+construye con la silueta de la imagen: es el efecto propio del sitio.
+
+Cuando la consola se retira, el lienzo recupera todo el ancho
+(`body[data-console="closed"]`): no queda banda negra.
 
 La columna de resultado es un `role="log"` con `aria-live="polite"` y tiene su
 propia barra de desplazamiento, estilada con los tokens del sitio (pulgar

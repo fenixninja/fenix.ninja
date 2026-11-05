@@ -26,6 +26,11 @@
       "detail": "lienzo hasta x=922, panel desde x=922"
     },
     {
+      "name": "Al retirar la consola el lienzo ocupa todo el ancho",
+      "ok": true,
+      "detail": "lienzo de 1440px, banda negra de 0px"
+    },
+    {
       "name": "El sprite de iconos SVG propios está presente",
       "ok": true,
       "detail": "icon-terminal + icon-upload"
@@ -53,12 +58,12 @@
     {
       "name": "El texto se escribe progresivamente en la columna derecha",
       "ok": true,
-      "detail": "49 -> 54 caracteres, cursor visto: True"
+      "detail": "49 -> 57 caracteres, cursor visto: True"
     },
     {
       "name": "La escritura avanza de forma continua",
       "ok": true,
-      "detail": "0.7 caracteres/s en headless (los temporizadores van a ~1,7 Hz; en un navegador real el ritmo es de 35-80 ms por carácter)"
+      "detail": "2.0 caracteres/s en headless (los temporizadores van a ~1,7 Hz; en un navegador real el ritmo es de 17-40 ms por carácter)"
     },
     {
       "name": "Las imagenes remotas se cargan con CORS",
@@ -66,7 +71,7 @@
       "detail": "20 cargadas, 0 con error"
     },
     {
-      "name": "#cv monta la diapositiva en color",
+      "name": "#cv monta el lienzo de celdas",
       "ok": true,
       "detail": "canvas .fnx-slide presente"
     },
@@ -83,17 +88,22 @@
     {
       "name": "#cv escribe el texto progresivamente",
       "ok": true,
-      "detail": "1 -> 2 caracteres"
+      "detail": "3 -> 4 caracteres"
     },
     {
       "name": "#cv termina la escritura al hacer clic",
       "ok": true,
-      "detail": "9 -> 80 caracteres"
+      "detail": "24 -> 80 caracteres"
     },
     {
       "name": "#cv revela la imagen de izquierda a derecha",
       "ok": true,
-      "detail": "fracción 0.05555555555555555 -> 0.8316666666666667"
+      "detail": "fracción 0.08555555555555555 -> 1"
+    },
+    {
+      "name": "#cv carga la imagen en la consola",
+      "ok": true,
+      "detail": "245x290px dentro del panel"
     },
     {
       "name": "#cv deja la consola plegada durante la presentación",
@@ -101,7 +111,7 @@
       "detail": "paleta oculta"
     },
     {
-      "name": "#robot monta la diapositiva en color",
+      "name": "#robot monta el lienzo de celdas",
       "ok": true,
       "detail": "canvas .fnx-slide presente"
     },
@@ -123,12 +133,17 @@
     {
       "name": "#robot termina la escritura al hacer clic",
       "ok": true,
-      "detail": "8 -> 120 caracteres"
+      "detail": "11 -> 120 caracteres"
     },
     {
       "name": "#robot revela la imagen de izquierda a derecha",
       "ok": true,
-      "detail": "fracción 0 -> 0.10277777777777777"
+      "detail": "fracción 0.46111111111111114 -> 1"
+    },
+    {
+      "name": "#robot carga la imagen en la consola",
+      "ok": true,
+      "detail": "370x290px dentro del panel"
     },
     {
       "name": "#robot deja la consola plegada durante la presentación",
@@ -136,7 +151,7 @@
       "detail": "paleta oculta"
     },
     {
-      "name": "#reptile monta la diapositiva en color",
+      "name": "#reptile monta el lienzo de celdas",
       "ok": true,
       "detail": "canvas .fnx-slide presente"
     },
@@ -153,17 +168,22 @@
     {
       "name": "#reptile escribe el texto progresivamente",
       "ok": true,
-      "detail": "1 -> 3 caracteres"
+      "detail": "1 -> 4 caracteres"
     },
     {
       "name": "#reptile termina la escritura al hacer clic",
       "ok": true,
-      "detail": "11 -> 448 caracteres"
+      "detail": "14 -> 448 caracteres"
     },
     {
       "name": "#reptile revela la imagen de izquierda a derecha",
       "ok": true,
-      "detail": "fracción 0 -> 0.2827777777777778"
+      "detail": "fracción 0 -> 1"
+    },
+    {
+      "name": "#reptile carga la imagen en la consola",
+      "ok": true,
+      "detail": "362x290px dentro del panel"
     },
     {
       "name": "#reptile deja la consola plegada durante la presentación",
@@ -171,19 +191,19 @@
       "detail": "paleta oculta"
     },
     {
-      "name": "La imagen del medio se ancla al DOM para poder reproducirse",
+      "name": "El GIF se compone dentro de la consola",
       "ok": true,
-      "detail": "17 imagen(es) viva(s)"
-    },
-    {
-      "name": "La diapositiva del GIF se compone en color",
-      "ok": true,
-      "detail": "{'width': 737, 'height': 720, 'painted': 301}"
+      "detail": "{'visible': True, 'src': '/assets/img/evolution-cv.gif', 'decoded': True, 'width': 386, 'height': 290, 'live': True}"
     },
     {
       "name": "El bucle de imagen viva está activo en la diapositiva del GIF",
       "ok": true,
-      "detail": "estado: {'active': True, 'live': True, 'reveal': 0.06777777777777778, 'kind': 'media', 'index': 13, 'total': 19, 'title': 'CV'}"
+      "detail": "bucle vivo: True"
+    },
+    {
+      "name": "La imagen del medio se ancla al DOM para poder reproducirse",
+      "ok": true,
+      "detail": "11 imagen(es) viva(s)"
     },
     {
       "name": "La columna de resultado tiene scroll propio",

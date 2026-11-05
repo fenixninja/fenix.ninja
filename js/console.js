@@ -244,6 +244,8 @@
         if (!el.console) return;
 
         el.console.dataset.open = open ? "true" : "false";
+        // El lienzo se expande cuando la consola se retira: sin banda negra.
+        document.body.dataset.console = open ? "open" : "closed";
         if (el.toggle) {
             el.toggle.setAttribute("aria-expanded", open ? "true" : "false");
             el.toggle.setAttribute(

@@ -68,6 +68,9 @@ proceso aplican y cuáles quedan fuera de alcance.
   máscara (silueta) que el motor rasteriza como celdas.
 - El texto ya no se dibuja sobre el lienzo: se escribe en la columna de
   resultado de la consola, a la derecha, con efecto de máquina de escribir.
+- Las imágenes se cargan dentro de la consola y se revelan con un velo; en el
+  lienzo queda el render de celdas de la silueta.
+- Al retirar la consola el lienzo recupera todo el ancho: no queda banda negra.
 - La narración y el medio van en paralelo: la escritura nunca se interrumpe por
   una imagen lenta y la diapositiva avanza al terminar de leerse.
 - El plazo de una diapositiva con medio arranca cuando el medio está listo, no

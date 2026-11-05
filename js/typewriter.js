@@ -3,10 +3,10 @@
 
     // Ritmo de escritura humana: base corta + variación aleatoria + pausas
     // tras la puntuación. Nada de intervalos fijos.
-    const BASE_DELAY = 35;
-    const JITTER = 45;
+    const BASE_DELAY = 17;
+    const JITTER = 22;
     const PUNCTUATION = /[.,;:!?…]$/;
-    const PUNCTUATION_PAUSE = 240;
+    const PUNCTUATION_PAUSE = 120;
 
     class Typewriter {
         constructor(options = {}) {

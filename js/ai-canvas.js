@@ -99,6 +99,15 @@
 
             this.adjust();
             window.addEventListener("resize", this.handleResize);
+
+            // El lienzo cambia de ancho al plegar la consola: el motor y el
+            // presentador se adaptan sin esperar a un resize de la ventana.
+            if (typeof ResizeObserver !== "undefined" && elements.container) {
+                this.resizeObserver = new ResizeObserver(() => {
+                    window.dispatchEvent(new Event("resize"));
+                });
+                this.resizeObserver.observe(elements.container);
+            }
         }
 
         adjust() {
@@ -177,6 +186,10 @@
         remove() {
             if (!this.container) return;
             try {
+                if (this.resizeObserver) {
+                    this.resizeObserver.disconnect();
+                    this.resizeObserver = null;
+                }
                 window.removeEventListener("resize", this.handleResize);
                 this.container.removeChild(this.canvas);
             } catch (e) {}

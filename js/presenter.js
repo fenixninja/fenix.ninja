@@ -6,7 +6,7 @@
     const MEDIA_DURATION = 6600;
     const MEDIA_TIMEOUT_GRACE = 12000;
     const LIVE_INTERVAL = 100;
-    const READING_PAUSE = 1400;
+    const READING_PAUSE = 700;
 
     // ===== DISEÑO DE LA DIAPOSITIVA ===== //
     // El lienzo visible ocupa la zona izquierda; el texto se escribe en la
@@ -22,7 +22,7 @@
     // la diapositiva.
     const REVEAL_DELAY = 35;
     const REVEAL_JITTER = 45;
-    const REVEAL_DURATION = 1800;
+    const REVEAL_DURATION = 900;
 
     const FONT_DISPLAY = "'Ethnocentric', 'Arial Narrow', Arial, sans-serif";
     const FONT_BODY = "'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
@@ -51,6 +51,8 @@
 
             this.container = document.getElementById("ai-canvas-container");
             this.output = document.getElementById("fnx-console-output");
+            this.mediaFigure = document.getElementById("fnx-console-media");
+            this.mediaImage = document.getElementById("fnx-console-image");
 
             // Lienzo visible: la imagen a color de la diapositiva.
             this.slideCanvas = document.createElement("canvas");
@@ -100,6 +102,7 @@
             this.stopLive();
             this.stopReveal();
             this.typewriter.stop();
+            this.setMedia(null, null);
             this.unmount();
             this.deck = null;
             this.index = -1;
@@ -139,6 +142,11 @@
             this.stopReveal();
             this.typewriter.stop();
 
+            // La diapositiva en curso es la referencia: todo lo que llegue
+            // mas tarde (una imagen, por ejemplo) se descarta si ya no es
+            // esta.
+            this.currentSlide = slide;
+
             // El medio y la narración van en paralelo: el texto se escribe
             // mientras la imagen carga y nunca se interrumpe.
             const media = slide.kind === "media"
@@ -148,17 +156,48 @@
             const narration = this.typeNarrative(slide);
 
             Promise.all([media, narration]).then(() => {
+                // Si la diapositiva ya cambio, su narracion se cancelo: no
+                // hay que advancear a la siguiente desde aqui.
+                if (this.currentSlide !== slide) return;
                 this.scheduleNext(READING_PAUSE);
             });
         }
 
         // ===== Lado izquierdo: el render ===== //
 
+        /**
+         * Publica la imagen de la diapositiva dentro de la consola. El velo
+         * la revela de izquierda a derecha al ritmo de la escritura.
+         */
+        setMedia(slide, src) {
+            if (!this.mediaFigure || !this.mediaImage) return;
+
+            if (!src) {
+                this.mediaFigure.hidden = true;
+                this.mediaImage.removeAttribute("src");
+                return;
+            }
+
+            this.mediaFigure.hidden = false;
+            this.mediaFigure.style.setProperty("--reveal-clip", "0%");
+            this.mediaImage.alt = (slide && (slide.title || slide.caption)) || "";
+
+            if (this.mediaImage.getAttribute("src") !== src) {
+                this.mediaImage.setAttribute("src", src);
+            }
+        }
+
         showTextShape(slide) {
             this.stopLive();
+            this.setMedia(slide, null);
             this.image = null;
             this.silhouette = null;
             this.silhouetteIsLive = false;
+
+            // La mascara se vacia: el render de celdas de la imagen anterior
+            // no puede quedarse en el lienzo.
+            this.maskCtx.clearRect(0, 0, this.maskCanvas.width, this.maskCanvas.height);
+            this.slideCtx.clearRect(0, 0, this.slideCanvas.width, this.slideCanvas.height);
 
             // El titular se rasteriza en el lienzo con el efecto de la casa.
             const title = slide.title || slide.text || "";
@@ -170,6 +209,9 @@
             // importante y no puede quedarse esperando.
             return this.withTimeout(this.loadImage(slide.src), MEDIA_TIMEOUT_GRACE)
                 .then((image) => {
+                    // La diapositiva ya cambio mientras cargaba la imagen.
+                    if (this.currentSlide !== slide) return;
+
                     if (!image) {
                         this.showTextShape(slide);
                         return;
@@ -177,6 +219,7 @@
 
                     this.image = image;
                     this.silhouette = this.toSilhouette(image);
+                    this.setMedia(slide, image.src);
                     this.startReveal();
                     this.paintCurrent(slide);
 
@@ -189,19 +232,6 @@
                 .catch(() => {
                     this.showTextShape(slide);
                 });
-        }
-
-        /**
-         * Dibuja la imagen recortada por la fracción revelada: la foto
-         * aparece de izquierda a derecha, como si se escribiera.
-         */
-        drawImageClipped(ctx, image, rect) {
-            ctx.save();
-            ctx.beginPath();
-            ctx.rect(0, 0, rect.x + rect.w * this.reveal, this.slideCanvas.height);
-            ctx.clip();
-            ctx.drawImage(image, rect.x, rect.y, rect.w, rect.h);
-            ctx.restore();
         }
 
         /**
@@ -220,6 +250,13 @@
                 if (token !== this.revealToken) return;
 
                 this.reveal = Math.min(1, (Date.now() - startedAt) / REVEAL_DURATION);
+
+                if (this.mediaFigure) {
+                    this.mediaFigure.style.setProperty(
+                        "--reveal-clip",
+                        `${(this.reveal * 100).toFixed(1)}%`
+                    );
+                }
 
                 this.paintCurrent(this.currentSlide);
 
@@ -273,10 +310,9 @@
         paintMediaSlide(slide) {
             const rect = this.imageRect();
 
-            // Imagen a color, revelada de izquierda a derecha al ritmo de la
-            // escritura humana.
+            // La imagen a color vive en la consola. En el lienzo queda el
+            // render de celdas que el motor construye con la máscara.
             this.slideCtx.clearRect(0, 0, this.slideCanvas.width, this.slideCanvas.height);
-            this.drawImageClipped(this.slideCtx, this.image, rect);
 
             // La máscara solo lleva la silueta: el texto vive en la columna
             // derecha y no debe rasterizarse aquí.
@@ -515,9 +551,6 @@
 
                 const rect = this.imageRect();
                 const source = this.silhouetteIsLive ? this.image : this.silhouette;
-
-                this.slideCtx.clearRect(rect.x, rect.y, rect.w, rect.h);
-                this.drawImageClipped(this.slideCtx, this.image, rect);
 
                 this.maskCtx.clearRect(rect.x, rect.y, rect.w, rect.h);
                 this.maskCtx.drawImage(source, rect.x, rect.y, rect.w, rect.h);

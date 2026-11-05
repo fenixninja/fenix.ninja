@@ -123,9 +123,24 @@ def install_reveal_promise(page):
     """Promesa en la pagina que sigue el revelado de la imagen."""
     page.evaluate("""() => {
         window.__reveal = new Promise((resolve) => {
+            const mediaState = () => {
+                const fig = document.getElementById('fnx-console-media');
+                const img = document.getElementById('fnx-console-image');
+                const panel = document.getElementById('fnx-console-panel').getBoundingClientRect();
+                const rect = fig.getBoundingClientRect();
+                return {
+                    visible: !fig.hidden,
+                    src: img.getAttribute('src') || '',
+                    inside: rect.left >= panel.left - 1 && rect.right <= panel.right + 1,
+                    width: Math.round(rect.width),
+                    height: Math.round(rect.height)
+                };
+            };
+
             let low = null;
             let attempts = 0;
             let lastAdvance = 0;
+            let lastIndex = -1;
             const timer = setInterval(() => {
                 const status = window.FenixContent.status();
 
@@ -136,11 +151,20 @@ def install_reveal_promise(page):
                 }
 
                 const now = Date.now();
+                const value = status.reveal;
+
+                // Cambia de diapositiva: el revelado tiene que reiniciarse.
+                if (status.index !== lastIndex) {
+                    lastIndex = status.index;
+                    low = null;
+                    lastAdvance = now;
+                    return;
+                }
 
                 // Avanzar hasta una diapositiva con imagen cuyo revelado
                 // este todavia en curso.
                 if (status.kind !== 'media') {
-                    if (attempts < 6 && now - lastAdvance > 1500) {
+                    if (attempts < 8 && now - lastAdvance > 2000) {
                         attempts += 1;
                         lastAdvance = now;
                         window.FenixContent.next();
@@ -148,12 +172,10 @@ def install_reveal_promise(page):
                     return;
                 }
 
-                const value = status.reveal;
-
                 if (low === null) {
                     if (value < 0.9) {
                         low = value;
-                    } else if (attempts < 6 && now - lastAdvance > 1500) {
+                    } else if (attempts < 8 && now - lastAdvance > 6000) {
                         // Esta imagen ya se revelo: buscar la siguiente.
                         attempts += 1;
                         lastAdvance = now;
@@ -162,9 +184,18 @@ def install_reveal_promise(page):
                     return;
                 }
 
-                if (value > low) {
+                if (value < low) {
+                    // El revelado se ha reiniciado con la nueva diapositiva.
+                    low = value;
+                } else if (value > low) {
                     clearInterval(timer);
-                    resolve({ok: true, low, after: value});
+                    resolve({ok: true, low, after: value, media: mediaState()});
+                } else if (attempts < 8 && now - lastAdvance > 6000) {
+                    // El revelado se ha congelado al cambiar de diapositiva.
+                    low = null;
+                    attempts += 1;
+                    lastAdvance = now;
+                    window.FenixContent.next();
                 }
             }, 120);
             setTimeout(() => {
@@ -341,6 +372,26 @@ def main():
                    layout["canvasRight"] <= layout["panelLeft"] + 1,
                    f"lienzo hasta x={layout['canvasRight']:.0f}, panel desde x={layout['panelLeft']:.0f}")
 
+        # Al retirar la consola el lienzo debe ocupar todo el ancho.
+        page.click("#fnx-console-toggle")
+        page.wait_for_timeout(900)
+        collapsed = page.evaluate("""() => {
+            const wrap = document.querySelector('.ai-canvas-wrapper').getBoundingClientRect();
+            return {
+                width: Math.round(wrap.width),
+                gap: Math.round(window.innerWidth - wrap.right),
+                panelHidden: getComputedStyle(document.getElementById('fnx-console-panel')).visibility === 'hidden'
+            };
+        }""")
+        audit.step("Al retirar la consola el lienzo ocupa todo el ancho",
+                   collapsed["gap"] <= 1 and collapsed["width"] > layout["width"] * 0.95,
+                   f"lienzo de {collapsed['width']}px, banda negra de {collapsed['gap']}px")
+        audit.shot("02b-consola-retirada")
+        audit.frame()
+
+        page.click("#fnx-console-toggle")
+        page.wait_for_timeout(900)
+
         audit.step("El sprite de iconos SVG propios está presente",
                    page.eval_on_selector_all("#icon-terminal, #icon-upload", "els => els.length") == 2,
                    "icon-terminal + icon-upload")
@@ -427,7 +478,7 @@ def main():
         }""")
         audit.step("La escritura avanza de forma continua", rate > 0,
                    f"{rate:.1f} caracteres/s en headless (los temporizadores van a ~1,7 Hz;"
-                   " en un navegador real el ritmo es de 35-80 ms por carácter)")
+                   " en un navegador real el ritmo es de 17-40 ms por carácter)")
 
         print("\n== Comandos de contenido ==")
 
@@ -461,7 +512,7 @@ def main():
 
             # El lienzo visible debe estar montado nada mas empezar.
             has_slide_canvas = page.evaluate("!!document.querySelector('#ai-canvas-container .fnx-slide')")
-            audit.step(f"{command} monta la diapositiva en color", has_slide_canvas,
+            audit.step(f"{command} monta el lienzo de celdas", has_slide_canvas,
                        "canvas .fnx-slide presente" if has_slide_canvas else "sin canvas")
 
             deck = page.evaluate("async () => (window.FenixContent ? (await window.FenixContent.loadDeck('%s')) : null)" % name)
@@ -506,9 +557,19 @@ def main():
                        bool(reveal.get("ok")),
                        f"fracción {reveal.get('low')} -> {reveal.get('after')}")
 
-            page.wait_for_timeout(2200)
+            # La captura se toma en pleno revelado: la imagen entra en la
+            # consola mientras el texto se escribe.
             audit.shot(f"06-{name}-medio")
             audit.frame()
+
+            media_in_console = reveal.get("media") or {}
+            audit.step(f"{command} carga la imagen en la consola",
+                       media_in_console["visible"]
+                       and bool(media_in_console["src"])
+                       and media_in_console["inside"],
+                       f"{media_in_console['width']}x{media_in_console['height']}px dentro del panel")
+
+            page.wait_for_timeout(2200)
 
             # Estado real durante la presentación: consola plegada a una línea.
             page.keyboard.press("Escape")
@@ -522,48 +583,86 @@ def main():
         print("\n== GIF animado (CV) ==")
         page.fill("#ai-input", "#cv")
         page.keyboard.press("Enter")
-        page.wait_for_timeout(1800)
-        page.fill("#ai-input", "#next")
-        page.keyboard.press("Enter")
+        page.wait_for_timeout(300)
 
         # El presentador ancla la imagen cargada al DOM: es la señal de que
         # el medio está listo (el GIF pesa ~900 KB y tarda en descargarse).
-        page.wait_for_selector("img[aria-hidden='true']", timeout=20000)
-        page.wait_for_timeout(1500)
+        # El medidor se instala antes de que aparezca para no perderlo.
+        page.evaluate("""() => {
+            window.__gif = new Promise((resolve) => {
+                const deadline = performance.now() + 25000;
+                const check = () => {
+                    const fig = document.getElementById('fnx-console-media');
+                    const img = document.getElementById('fnx-console-image');
+                    const src = img ? (img.getAttribute('src') || '') : '';
+                    const rect = fig ? fig.getBoundingClientRect() : {width: 0, height: 0};
 
-        anchored = page.evaluate("document.querySelectorAll(\"img[aria-hidden='true']\").length")
-        audit.step("La imagen del medio se ancla al DOM para poder reproducirse",
-                   anchored > 0, f"{anchored} imagen(es) viva(s)")
+                    if (fig && !fig.hidden && src.endsWith('.gif')) {
+                        // El bucle de imagen viva arranca justo despues.
+                        const waitLive = (tries) => {
+                            const status = window.FenixContent.status();
+                            if (status.live || tries <= 0) {
+                                resolve({
+                                    visible: true,
+                                    src: src.slice(-28),
+                                    decoded: img.complete && img.naturalWidth > 0,
+                                    width: Math.round(rect.width),
+                                    height: Math.round(rect.height),
+                                    live: !!status.live
+                                });
+                                return;
+                            }
+                            setTimeout(() => waitLive(tries - 1), 150);
+                        };
+                        waitLive(20);
+                        return;
+                    }
 
-        gif_state = page.evaluate("""() => {
-            const canvas = document.querySelector('#ai-canvas-container .fnx-slide');
-            if (!canvas) return null;
-            const ctx = canvas.getContext('2d');
-            const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-            let painted = 0;
-            for (let i = 3; i < data.length; i += 400) { if (data[i] > 0) painted++; }
-            return { width: canvas.width, height: canvas.height, painted };
+                    if (performance.now() > deadline) {
+                        resolve({visible: false, src: src.slice(-28), decoded: false, width: 0, height: 0});
+                        return;
+                    }
+
+                    setTimeout(check, 120);
+                };
+                check();
+            });
         }""")
-        audit.step("La diapositiva del GIF se compone en color",
-                   bool(gif_state and gif_state["painted"] > 0),
+        # El GIF es la segunda diapositiva del guion: se avanza hasta ella
+        # sin pasarse, porque la presentacion continua sola.
+        page.evaluate("""() => {
+            window.__goto = new Promise((resolve) => {
+                const deadline = performance.now() + 15000;
+                const step = () => {
+                    const status = window.FenixContent.status();
+                    if (!status.active || performance.now() > deadline) {
+                        resolve(status);
+                        return;
+                    }
+                    if (status.index === 0) window.FenixContent.next();
+                    setTimeout(step, 120);
+                };
+                step();
+            });
+        }""")
+        page.evaluate("() => window.__goto")
+
+        gif_state = page.evaluate("() => window.__gif")
+        audit.step("El GIF se compone dentro de la consola",
+                   bool(gif_state and gif_state["visible"] and gif_state["decoded"]
+                        and gif_state["width"] > 0),
                    str(gif_state))
 
         # El Chromium headless no decodifica la animación de los GIF (ni
         # siquiera uno visible y plano) y sus temporizadores van a ~1,7 Hz:
         # se verifica el estado del presentador en lugar de contar fotogramas.
-        state = page.evaluate("""async () => {
-            const deadline = performance.now() + 20000;
-            let last = null;
-            while (performance.now() < deadline) {
-                last = window.FenixContent.status();
-                if (last.live) return last;
-                await new Promise((resolve) => setTimeout(resolve, 150));
-            }
-            return last;
-        }""")
         audit.step("El bucle de imagen viva está activo en la diapositiva del GIF",
-                   bool(state and state.get("live")),
-                   f"estado: {state}")
+                   bool(gif_state and gif_state.get("live")),
+                   f"bucle vivo: {gif_state.get('live') if gif_state else None}")
+
+        anchored = page.evaluate("document.querySelectorAll(\"img[aria-hidden='true']\").length")
+        audit.step("La imagen del medio se ancla al DOM para poder reproducirse",
+                   anchored > 0, f"{anchored} imagen(es) viva(s)")
 
         audit.shot("07-cv-gif-animado")
         audit.frame()

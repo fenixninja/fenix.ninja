@@ -89,5 +89,6 @@
     /* ===== Layout ===== */
     /* Columna derecha: consola de comandos y resultado. El lienzo ocupa el resto. */
     --panel-width: clamp(360px, 36vw, 560px);
+    --console-media-height: 32vh;
     --panel-gutter: 20px;
 }
