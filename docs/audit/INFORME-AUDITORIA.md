@@ -13,6 +13,20 @@ Generado por `tools/audit.py` (Playwright + Chromium headless, 1440×900).
 | Excepciones no controladas | 0 |
 | Peticiones fallidas | 0 |
 
+## Vista previa publicada
+
+| Comprobación | Resultado |
+| --- | --- |
+| Consola a la derecha | PASS (panel desde x=922 de 1440px) |
+| Lienzo a la izquierda | PASS |
+| Comandos disponibles | PASS (15) |
+| Escritura en curso | PASS (`Concep` escrito, cursor visible) |
+| Scroll propio de la columna | PASS (`auto`, barra de 8px) |
+| Errores de consola | 0 |
+| Excepciones no controladas | 0 |
+
+Captura: `10-preview-publica.png`.
+
 ## Comprobaciones
 
 | Comprobación | Resultado | Detalle |
