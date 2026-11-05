@@ -86,6 +86,12 @@ columna de resultado completa la escritura al instante; cambiar de diapositiva
 la cancela. La diapositiva avanza cuando la escritura termina más una pausa de
 lectura de `1400 ms`.
 
+Las imágenes de la columna izquierda se revelan con el mismo ritmo: la foto
+aparece de izquierda a derecha durante `1800 ms`, como si se escribiera. El
+avance se mide por tiempo para que un navegador con temporizadores
+estrangulados no alargue la diapositiva. El render final es idéntico al que
+había: la imagen a color sobre la silueta que el motor rasteriza como celdas.
+
 La columna de resultado es un `role="log"` con `aria-live="polite"` y tiene su
 propia barra de desplazamiento, estilada con los tokens del sitio (pulgar
 `--color-border-strong`, `--color-primary` al pasar el ratón).

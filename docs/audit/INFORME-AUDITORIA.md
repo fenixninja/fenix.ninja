@@ -6,8 +6,8 @@ Generado por `tools/audit.py` (Playwright + Chromium headless, 1440×900).
 
 | Métrica | Valor |
 | --- | --- |
-| Comprobaciones | 40 |
-| Correctas | 40 |
+| Comprobaciones | 44 |
+| Correctas | 44 |
 | Fallidas | 0 |
 | Errores de consola del navegador | 0 |
 | Excepciones no controladas | 0 |
@@ -27,29 +27,33 @@ Generado por `tools/audit.py` (Playwright + Chromium headless, 1440×900).
 | El filtro de la paleta reduce las opciones | PASS | ['#galaxyEspiral de partículas en expansión continua'] |
 | La navegación con teclado mueve la selección | PASS | aria-activedescendant activo |
 | El comando #galaxy se ejecuta | PASS | enviado |
-| El texto se escribe progresivamente en la columna derecha | PASS | 49 -> 57 caracteres, cursor visto: True |
-| La escritura avanza de forma continua | PASS | 1.1 caracteres/s en headless (los temporizadores van a ~1,7 Hz; en un navegador real el ritmo es de 35-80 ms por carácter) |
+| El texto se escribe progresivamente en la columna derecha | PASS | 49 -> 54 caracteres, cursor visto: True |
+| La escritura avanza de forma continua | PASS | 0.7 caracteres/s en headless (los temporizadores van a ~1,7 Hz; en un navegador real el ritmo es de 35-80 ms por carácter) |
+| Las imagenes remotas se cargan con CORS | PASS | 20 cargadas, 0 con error |
+| #cv monta la diapositiva en color | PASS | canvas .fnx-slide presente |
 | El guion #cv se carga | PASS | 19 diapositivas |
 | #cv contiene medios | PASS | 10 con imagen |
-| #cv escribe el texto progresivamente | PASS | 5 -> 6 caracteres |
-| #cv monta la diapositiva en color | PASS | canvas .fnx-slide presente |
-| #cv termina la escritura al hacer clic | PASS | 16 -> 80 caracteres |
+| #cv escribe el texto progresivamente | PASS | 1 -> 2 caracteres |
+| #cv termina la escritura al hacer clic | PASS | 9 -> 80 caracteres |
+| #cv revela la imagen de izquierda a derecha | PASS | fracción 0.05555555555555555 -> 0.8316666666666667 |
 | #cv deja la consola plegada durante la presentación | PASS | paleta oculta |
+| #robot monta la diapositiva en color | PASS | canvas .fnx-slide presente |
 | El guion #robot se carga | PASS | 7 diapositivas |
 | #robot contiene medios | PASS | 3 con imagen |
 | #robot escribe el texto progresivamente | PASS | 1 -> 2 caracteres |
-| #robot monta la diapositiva en color | PASS | canvas .fnx-slide presente |
-| #robot termina la escritura al hacer clic | PASS | 4 -> 120 caracteres |
+| #robot termina la escritura al hacer clic | PASS | 8 -> 120 caracteres |
+| #robot revela la imagen de izquierda a derecha | PASS | fracción 0 -> 0.10277777777777777 |
 | #robot deja la consola plegada durante la presentación | PASS | paleta oculta |
+| #reptile monta la diapositiva en color | PASS | canvas .fnx-slide presente |
 | El guion #reptile se carga | PASS | 8 diapositivas |
 | #reptile contiene medios | PASS | 7 con imagen |
-| #reptile escribe el texto progresivamente | PASS | 1 -> 2 caracteres |
-| #reptile monta la diapositiva en color | PASS | canvas .fnx-slide presente |
-| #reptile termina la escritura al hacer clic | PASS | 2 -> 7 caracteres |
+| #reptile escribe el texto progresivamente | PASS | 1 -> 3 caracteres |
+| #reptile termina la escritura al hacer clic | PASS | 11 -> 448 caracteres |
+| #reptile revela la imagen de izquierda a derecha | PASS | fracción 0 -> 0.2827777777777778 |
 | #reptile deja la consola plegada durante la presentación | PASS | paleta oculta |
-| La imagen del medio se ancla al DOM para poder reproducirse | PASS | 12 imagen(es) viva(s) |
-| La diapositiva del GIF se compone en color | PASS | {'width': 737, 'height': 720, 'painted': 3579} |
-| El bucle de imagen viva está activo en la diapositiva del GIF | PASS | estado: {'active': True, 'live': True, 'index': 13, 'total': 19, 'title': 'CV'} |
+| La imagen del medio se ancla al DOM para poder reproducirse | PASS | 17 imagen(es) viva(s) |
+| La diapositiva del GIF se compone en color | PASS | {'width': 737, 'height': 720, 'painted': 301} |
+| El bucle de imagen viva está activo en la diapositiva del GIF | PASS | estado: {'active': True, 'live': True, 'reveal': 0.06777777777777778, 'kind': 'media', 'index': 13, 'total': 19, 'title': 'CV'} |
 | La columna de resultado tiene scroll propio | PASS | overflow-y=auto, barra de 8px |
 | La barra de scroll usa nuestro estilo | PASS | pulgar rgb(58, 68, 79) (--color-border-strong) |
 | El botón pliega la consola | PASS | data-open=false |

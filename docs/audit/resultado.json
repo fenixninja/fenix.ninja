@@ -53,12 +53,22 @@
     {
       "name": "El texto se escribe progresivamente en la columna derecha",
       "ok": true,
-      "detail": "49 -> 57 caracteres, cursor visto: True"
+      "detail": "49 -> 54 caracteres, cursor visto: True"
     },
     {
       "name": "La escritura avanza de forma continua",
       "ok": true,
-      "detail": "1.1 caracteres/s en headless (los temporizadores van a ~1,7 Hz; en un navegador real el ritmo es de 35-80 ms por carácter)"
+      "detail": "0.7 caracteres/s en headless (los temporizadores van a ~1,7 Hz; en un navegador real el ritmo es de 35-80 ms por carácter)"
+    },
+    {
+      "name": "Las imagenes remotas se cargan con CORS",
+      "ok": true,
+      "detail": "20 cargadas, 0 con error"
+    },
+    {
+      "name": "#cv monta la diapositiva en color",
+      "ok": true,
+      "detail": "canvas .fnx-slide presente"
     },
     {
       "name": "El guion #cv se carga",
@@ -73,22 +83,27 @@
     {
       "name": "#cv escribe el texto progresivamente",
       "ok": true,
-      "detail": "5 -> 6 caracteres"
-    },
-    {
-      "name": "#cv monta la diapositiva en color",
-      "ok": true,
-      "detail": "canvas .fnx-slide presente"
+      "detail": "1 -> 2 caracteres"
     },
     {
       "name": "#cv termina la escritura al hacer clic",
       "ok": true,
-      "detail": "16 -> 80 caracteres"
+      "detail": "9 -> 80 caracteres"
+    },
+    {
+      "name": "#cv revela la imagen de izquierda a derecha",
+      "ok": true,
+      "detail": "fracción 0.05555555555555555 -> 0.8316666666666667"
     },
     {
       "name": "#cv deja la consola plegada durante la presentación",
       "ok": true,
       "detail": "paleta oculta"
+    },
+    {
+      "name": "#robot monta la diapositiva en color",
+      "ok": true,
+      "detail": "canvas .fnx-slide presente"
     },
     {
       "name": "El guion #robot se carga",
@@ -106,19 +121,24 @@
       "detail": "1 -> 2 caracteres"
     },
     {
-      "name": "#robot monta la diapositiva en color",
-      "ok": true,
-      "detail": "canvas .fnx-slide presente"
-    },
-    {
       "name": "#robot termina la escritura al hacer clic",
       "ok": true,
-      "detail": "4 -> 120 caracteres"
+      "detail": "8 -> 120 caracteres"
+    },
+    {
+      "name": "#robot revela la imagen de izquierda a derecha",
+      "ok": true,
+      "detail": "fracción 0 -> 0.10277777777777777"
     },
     {
       "name": "#robot deja la consola plegada durante la presentación",
       "ok": true,
       "detail": "paleta oculta"
+    },
+    {
+      "name": "#reptile monta la diapositiva en color",
+      "ok": true,
+      "detail": "canvas .fnx-slide presente"
     },
     {
       "name": "El guion #reptile se carga",
@@ -133,17 +153,17 @@
     {
       "name": "#reptile escribe el texto progresivamente",
       "ok": true,
-      "detail": "1 -> 2 caracteres"
-    },
-    {
-      "name": "#reptile monta la diapositiva en color",
-      "ok": true,
-      "detail": "canvas .fnx-slide presente"
+      "detail": "1 -> 3 caracteres"
     },
     {
       "name": "#reptile termina la escritura al hacer clic",
       "ok": true,
-      "detail": "2 -> 7 caracteres"
+      "detail": "11 -> 448 caracteres"
+    },
+    {
+      "name": "#reptile revela la imagen de izquierda a derecha",
+      "ok": true,
+      "detail": "fracción 0 -> 0.2827777777777778"
     },
     {
       "name": "#reptile deja la consola plegada durante la presentación",
@@ -153,17 +173,17 @@
     {
       "name": "La imagen del medio se ancla al DOM para poder reproducirse",
       "ok": true,
-      "detail": "12 imagen(es) viva(s)"
+      "detail": "17 imagen(es) viva(s)"
     },
     {
       "name": "La diapositiva del GIF se compone en color",
       "ok": true,
-      "detail": "{'width': 737, 'height': 720, 'painted': 3579}"
+      "detail": "{'width': 737, 'height': 720, 'painted': 301}"
     },
     {
       "name": "El bucle de imagen viva está activo en la diapositiva del GIF",
       "ok": true,
-      "detail": "estado: {'active': True, 'live': True, 'index': 13, 'total': 19, 'title': 'CV'}"
+      "detail": "estado: {'active': True, 'live': True, 'reveal': 0.06777777777777778, 'kind': 'media', 'index': 13, 'total': 19, 'title': 'CV'}"
     },
     {
       "name": "La columna de resultado tiene scroll propio",

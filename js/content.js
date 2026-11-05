@@ -96,6 +96,8 @@
         return {
             active: true,
             live: !!presenter.liveTimer,
+            reveal: presenter.reveal,
+            kind: presenter.currentSlide ? presenter.currentSlide.kind : null,
             index: presenter.index,
             total: presenter.deck ? presenter.deck.slides.length : 0,
             title: presenter.deck ? presenter.deck.title : null

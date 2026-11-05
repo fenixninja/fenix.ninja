@@ -30,8 +30,12 @@ espectador.
 
 El texto de cada diapositiva se escribe en la columna de resultado con efecto
 de máquina de escribir: 35 ms por carácter con variación aleatoria y pausas de
-240 ms tras la puntuación. La columna de resultado tiene su propio
-desplazamiento, con la barra de scroll estilada con los tokens del sitio.
+240 ms tras la puntuación. Las imágenes de la izquierda se revelan con el
+mismo ritmo, de izquierda a derecha, y su render final no cambia.
+
+La columna de resultado tiene su propio desplazamiento, con la barra de scroll
+estilada con los tokens del sitio. Un clic sobre el resultado termina la
+escritura al instante.
 
 ### Comandos
 

@@ -67,6 +67,114 @@ def serve(port):
     return httpd
 
 
+def install_grow_promise(page):
+    """Promesa en la pagina que detecta que el texto crece."""
+    page.evaluate("""() => {
+        window.__grow = new Promise((resolve) => {
+            const out = document.getElementById('fnx-console-output');
+            let node = null;
+            let first = -1;
+            const timer = setInterval(() => {
+                const caret = out.querySelector('.fnx-log__caret');
+                if (!caret) return;
+                const el = caret.parentElement;
+                if (el !== node) {
+                    node = el;
+                    first = el.textContent.length;
+                    return;
+                }
+                if (el.textContent.length > first) {
+                    clearInterval(timer);
+                    resolve({ok: true, first, after: el.textContent.length});
+                }
+            }, 120);
+            setTimeout(() => {
+                clearInterval(timer);
+                resolve({ok: false, first, after: null});
+            }, 15000);
+        });
+    }""")
+
+
+def install_skip_promise(page):
+    """Promesa en la pagina que hace clic en el texto que se esta escribiendo."""
+    page.evaluate("""() => {
+        window.__skip = new Promise((resolve) => {
+            const out = document.getElementById('fnx-console-output');
+            const timer = setInterval(() => {
+                const caret = out.querySelector('.fnx-log__caret');
+                if (!caret) return;
+                const node = caret.parentElement;
+                const before = node.textContent.length;
+                node.click();
+                const after = node.textContent.length;
+                clearInterval(timer);
+                resolve({ok: after > before, before, after});
+            }, 120);
+            setTimeout(() => {
+                clearInterval(timer);
+                resolve({ok: false, before: null, after: null});
+            }, 15000);
+        });
+    }""")
+
+
+def install_reveal_promise(page):
+    """Promesa en la pagina que sigue el revelado de la imagen."""
+    page.evaluate("""() => {
+        window.__reveal = new Promise((resolve) => {
+            let low = null;
+            let attempts = 0;
+            let lastAdvance = 0;
+            const timer = setInterval(() => {
+                const status = window.FenixContent.status();
+
+                if (!status.active) {
+                    clearInterval(timer);
+                    resolve({ok: false, low, after: null});
+                    return;
+                }
+
+                const now = Date.now();
+
+                // Avanzar hasta una diapositiva con imagen cuyo revelado
+                // este todavia en curso.
+                if (status.kind !== 'media') {
+                    if (attempts < 6 && now - lastAdvance > 1500) {
+                        attempts += 1;
+                        lastAdvance = now;
+                        window.FenixContent.next();
+                    }
+                    return;
+                }
+
+                const value = status.reveal;
+
+                if (low === null) {
+                    if (value < 0.9) {
+                        low = value;
+                    } else if (attempts < 6 && now - lastAdvance > 1500) {
+                        // Esta imagen ya se revelo: buscar la siguiente.
+                        attempts += 1;
+                        lastAdvance = now;
+                        window.FenixContent.next();
+                    }
+                    return;
+                }
+
+                if (value > low) {
+                    clearInterval(timer);
+                    resolve({ok: true, low, after: value});
+                }
+            }, 120);
+            setTimeout(() => {
+                clearInterval(timer);
+                resolve({ok: false, low, after: null});
+            }, 28000);
+        });
+    }""")
+
+
 class Audit:
     def __init__(self, page):
         self.page = page
@@ -322,10 +430,39 @@ def main():
                    " en un navegador real el ritmo es de 35-80 ms por carácter)")
 
         print("\n== Comandos de contenido ==")
+
+        # Las imagenes remotas se precargan: asi la auditoria mide el
+        # revelado y no la latencia de la red.
+        warmed = page.evaluate("""async () => {
+            let ok = 0;
+            let fail = 0;
+            for (const id of ['cv', 'robot', 'reptile']) {
+                const deck = await window.FenixContent.loadDeck(id);
+                await Promise.all(deck.slides.filter(s => s.kind === 'media').map(s =>
+                    new Promise((resolve) => {
+                        const img = new Image();
+                        img.crossOrigin = 'anonymous';
+                        img.onload = () => { ok += 1; resolve(); };
+                        img.onerror = () => { fail += 1; resolve(); };
+                        img.src = s.src;
+                    })
+                ));
+            }
+            return {ok, fail};
+        }""")
+        audit.step("Las imagenes remotas se cargan con CORS",
+                   warmed["ok"] > 0 and warmed["fail"] == 0,
+                   f"{warmed['ok']} cargadas, {warmed['fail']} con error")
+
         for command, name in (("#cv", "cv"), ("#robot", "robot"), ("#reptile", "reptile")):
             page.fill("#ai-input", command)
             page.keyboard.press("Enter")
-            page.wait_for_timeout(2600)
+            page.wait_for_timeout(600)
+
+            # El lienzo visible debe estar montado nada mas empezar.
+            has_slide_canvas = page.evaluate("!!document.querySelector('#ai-canvas-container .fnx-slide')")
+            audit.step(f"{command} monta la diapositiva en color", has_slide_canvas,
+                       "canvas .fnx-slide presente" if has_slide_canvas else "sin canvas")
 
             deck = page.evaluate("async () => (window.FenixContent ? (await window.FenixContent.loadDeck('%s')) : null)" % name)
             audit.step(f"El guion {command} se carga",
@@ -340,31 +477,7 @@ def main():
 
             # La escritura debe avanzar. La medida vive dentro de la pagina
             # para no depender del reloj del navegador sin ralentizar.
-            page.evaluate("""() => {
-                window.__grow = new Promise((resolve) => {
-                    const out = document.getElementById('fnx-console-output');
-                    let node = null;
-                    let first = -1;
-                    const timer = setInterval(() => {
-                        const caret = out.querySelector('.fnx-log__caret');
-                        if (!caret) return;
-                        const el = caret.parentElement;
-                        if (el !== node) {
-                            node = el;
-                            first = el.textContent.length;
-                            return;
-                        }
-                        if (el.textContent.length > first) {
-                            clearInterval(timer);
-                            resolve({ok: true, first, after: el.textContent.length});
-                        }
-                    }, 120);
-                    setTimeout(() => {
-                        clearInterval(timer);
-                        resolve({ok: false, first, after: null});
-                    }, 15000);
-                });
-            }""")
+            install_grow_promise(page)
             grow = page.evaluate("() => window.__grow")
             audit.step(f"{command} escribe el texto progresivamente",
                        bool(grow.get("ok")),
@@ -373,31 +486,8 @@ def main():
             audit.shot(f"05-{name}-presentacion")
             audit.frame()
 
-            # Diapositiva de medio: comprobar que el lienzo visible existe.
-            has_slide_canvas = page.evaluate("!!document.querySelector('#ai-canvas-container .fnx-slide')")
-            audit.step(f"{command} monta la diapositiva en color", has_slide_canvas,
-                       "canvas .fnx-slide presente" if has_slide_canvas else "sin canvas")
-
             # Un clic en la salida termina la escritura del elemento actual.
-            page.evaluate("""() => {
-                window.__skip = new Promise((resolve) => {
-                    const out = document.getElementById('fnx-console-output');
-                    const timer = setInterval(() => {
-                        const caret = out.querySelector('.fnx-log__caret');
-                        if (!caret) return;
-                        const node = caret.parentElement;
-                        const before = node.textContent.length;
-                        node.click();
-                        const after = node.textContent.length;
-                        clearInterval(timer);
-                        resolve({ok: after > before, before, after});
-                    }, 120);
-                    setTimeout(() => {
-                        clearInterval(timer);
-                        resolve({ok: false, before: null, after: null});
-                    }, 15000);
-                });
-            }""")
+            install_skip_promise(page)
             skipped = page.evaluate("() => window.__skip")
             audit.step(f"{command} termina la escritura al hacer clic",
                        bool(skipped.get("ok")),
@@ -406,6 +496,16 @@ def main():
             # Avanzar hasta un medio con imagen para capturarlo.
             page.fill("#ai-input", "#next")
             page.keyboard.press("Enter")
+
+            # La imagen se revela de izquierda a derecha: se sigue la fracción
+            # revelada desde dentro de la pagina, avanzando hasta la primera
+            # diapositiva que tenga imagen.
+            install_reveal_promise(page)
+            reveal = page.evaluate("() => window.__reveal")
+            audit.step(f"{command} revela la imagen de izquierda a derecha",
+                       bool(reveal.get("ok")),
+                       f"fracción {reveal.get('low')} -> {reveal.get('after')}")
+
             page.wait_for_timeout(2200)
             audit.shot(f"06-{name}-medio")
             audit.frame()

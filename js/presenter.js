@@ -16,6 +16,14 @@
     const MEDIA_IMAGE_MAX_HEIGHT = 0.72;
     const MEDIA_IMAGE_MAX_WIDTH = 0.94;
 
+    // El revelado de la imagen usa el mismo ritmo humano que el texto:
+    // 35 ms base con variación aleatoria. El avance se mide por tiempo
+    // para que un navegador con temporizadores estrangulados no alargue
+    // la diapositiva.
+    const REVEAL_DELAY = 35;
+    const REVEAL_JITTER = 45;
+    const REVEAL_DURATION = 1800;
+
     const FONT_DISPLAY = "'Ethnocentric', 'Arial Narrow', Arial, sans-serif";
     const FONT_BODY = "'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
 
@@ -58,6 +66,11 @@
             this.currentSlide = null;
             this.mounted = false;
 
+            // Fracción de la imagen ya revelada (0 → 1).
+            this.reveal = 1;
+            this.revealTimer = null;
+            this.revealToken = 0;
+
             this.typewriter = new window.FenixTypewriter({
                 onUpdate: () => this.scrollOutput()
             });
@@ -85,6 +98,7 @@
         stop() {
             this.stopTimer();
             this.stopLive();
+            this.stopReveal();
             this.typewriter.stop();
             this.unmount();
             this.deck = null;
@@ -122,6 +136,7 @@
          */
         render(slide) {
             this.stopTimer();
+            this.stopReveal();
             this.typewriter.stop();
 
             // El medio y la narración van en paralelo: el texto se escribe
@@ -162,6 +177,7 @@
 
                     this.image = image;
                     this.silhouette = this.toSilhouette(image);
+                    this.startReveal();
                     this.paintCurrent(slide);
 
                     if (slide.live) {
@@ -173,6 +189,57 @@
                 .catch(() => {
                     this.showTextShape(slide);
                 });
+        }
+
+        /**
+         * Dibuja la imagen recortada por la fracción revelada: la foto
+         * aparece de izquierda a derecha, como si se escribiera.
+         */
+        drawImageClipped(ctx, image, rect) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(0, 0, rect.x + rect.w * this.reveal, this.slideCanvas.height);
+            ctx.clip();
+            ctx.drawImage(image, rect.x, rect.y, rect.w, rect.h);
+            ctx.restore();
+        }
+
+        /**
+         * Revela la imagen de izquierda a derecha con el ritmo de una
+         * escritura humana, a la vez que el texto se escribe a la derecha.
+         */
+        startReveal() {
+            this.stopReveal();
+
+            this.reveal = 0;
+            this.revealToken += 1;
+            const token = this.revealToken;
+            const startedAt = Date.now();
+
+            const step = () => {
+                if (token !== this.revealToken) return;
+
+                this.reveal = Math.min(1, (Date.now() - startedAt) / REVEAL_DURATION);
+
+                this.paintCurrent(this.currentSlide);
+
+                if (this.reveal < 1) {
+                    this.revealTimer = setTimeout(step, REVEAL_DELAY + Math.random() * REVEAL_JITTER);
+                } else {
+                    this.revealTimer = null;
+                }
+            };
+
+            this.revealTimer = setTimeout(step, 0);
+        }
+
+        stopReveal() {
+            this.revealToken += 1;
+
+            if (this.revealTimer) {
+                clearTimeout(this.revealTimer);
+                this.revealTimer = null;
+            }
         }
 
         withTimeout(promise, ms) {
@@ -206,9 +273,10 @@
         paintMediaSlide(slide) {
             const rect = this.imageRect();
 
-            // Imagen a color, sobre fondo transparente.
+            // Imagen a color, revelada de izquierda a derecha al ritmo de la
+            // escritura humana.
             this.slideCtx.clearRect(0, 0, this.slideCanvas.width, this.slideCanvas.height);
-            this.slideCtx.drawImage(this.image, rect.x, rect.y, rect.w, rect.h);
+            this.drawImageClipped(this.slideCtx, this.image, rect);
 
             // La máscara solo lleva la silueta: el texto vive en la columna
             // derecha y no debe rasterizarse aquí.
@@ -449,7 +517,7 @@
                 const source = this.silhouetteIsLive ? this.image : this.silhouette;
 
                 this.slideCtx.clearRect(rect.x, rect.y, rect.w, rect.h);
-                this.slideCtx.drawImage(this.image, rect.x, rect.y, rect.w, rect.h);
+                this.drawImageClipped(this.slideCtx, this.image, rect);
 
                 this.maskCtx.clearRect(rect.x, rect.y, rect.w, rect.h);
                 this.maskCtx.drawImage(source, rect.x, rect.y, rect.w, rect.h);
