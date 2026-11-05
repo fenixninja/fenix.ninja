@@ -1,0 +1,147 @@
+{
+  "checks": [
+    {
+      "name": "El motor AICanvas está inicializado",
+      "ok": true,
+      "detail": "AICanvas + canvas en el contenedor"
+    },
+    {
+      "name": "La consola de comandos es visible",
+      "ok": true,
+      "detail": "panel visible"
+    },
+    {
+      "name": "El panel de comandos existe en el DOM",
+      "ok": true,
+      "detail": "15 comandos listados"
+    },
+    {
+      "name": "El sprite de iconos SVG propios está presente",
+      "ok": true,
+      "detail": "icon-terminal + icon-upload"
+    },
+    {
+      "name": "La paleta se abre al enfocar la entrada",
+      "ok": true,
+      "detail": "15 opciones"
+    },
+    {
+      "name": "El filtro de la paleta reduce las opciones",
+      "ok": true,
+      "detail": "['#galaxyEspiral de partículas en expansión continua']"
+    },
+    {
+      "name": "La navegación con teclado mueve la selección",
+      "ok": true,
+      "detail": "aria-activedescendant activo"
+    },
+    {
+      "name": "El comando #galaxy se ejecuta",
+      "ok": true,
+      "detail": "enviado"
+    },
+    {
+      "name": "El guion #cv se carga",
+      "ok": true,
+      "detail": "19 diapositivas"
+    },
+    {
+      "name": "#cv contiene medios",
+      "ok": true,
+      "detail": "10 con imagen"
+    },
+    {
+      "name": "#cv monta la diapositiva en color",
+      "ok": true,
+      "detail": "canvas .fnx-slide presente"
+    },
+    {
+      "name": "#cv deja la consola plegada durante la presentación",
+      "ok": true,
+      "detail": "paleta oculta"
+    },
+    {
+      "name": "El guion #robot se carga",
+      "ok": true,
+      "detail": "7 diapositivas"
+    },
+    {
+      "name": "#robot contiene medios",
+      "ok": true,
+      "detail": "3 con imagen"
+    },
+    {
+      "name": "#robot monta la diapositiva en color",
+      "ok": true,
+      "detail": "canvas .fnx-slide presente"
+    },
+    {
+      "name": "#robot deja la consola plegada durante la presentación",
+      "ok": true,
+      "detail": "paleta oculta"
+    },
+    {
+      "name": "El guion #reptile se carga",
+      "ok": true,
+      "detail": "8 diapositivas"
+    },
+    {
+      "name": "#reptile contiene medios",
+      "ok": true,
+      "detail": "7 con imagen"
+    },
+    {
+      "name": "#reptile monta la diapositiva en color",
+      "ok": true,
+      "detail": "canvas .fnx-slide presente"
+    },
+    {
+      "name": "#reptile deja la consola plegada durante la presentación",
+      "ok": true,
+      "detail": "paleta oculta"
+    },
+    {
+      "name": "La imagen del medio se ancla al DOM para poder reproducirse",
+      "ok": true,
+      "detail": "9 imagen(es) viva(s)"
+    },
+    {
+      "name": "La diapositiva del GIF se compone en color",
+      "ok": true,
+      "detail": "{'width': 1152, 'height': 720, 'painted': 1039}"
+    },
+    {
+      "name": "El bucle de imagen viva está activo en la diapositiva del GIF",
+      "ok": true,
+      "detail": "estado: {'active': True, 'live': True, 'index': 2, 'total': 19, 'title': 'CV'}"
+    },
+    {
+      "name": "El botón pliega la consola",
+      "ok": true,
+      "detail": "data-open=false"
+    },
+    {
+      "name": "La tecla ` vuelve a desplegarla",
+      "ok": true,
+      "detail": "data-open=true"
+    },
+    {
+      "name": "Sin desbordamiento horizontal en 390px",
+      "ok": true,
+      "detail": "scrollWidth=390"
+    },
+    {
+      "name": "0 errores en la consola del navegador",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "0 excepciones no controladas",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "console_errors": [],
+  "page_errors": [],
+  "failed_requests": []
+}

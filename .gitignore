@@ -1,0 +1,7 @@
+# Artefactos temporales de la auditoría visual
+docs/audit/frames/
+docs/audit/video/
+
+# Sistema
+.DS_Store
+Thumbs.db

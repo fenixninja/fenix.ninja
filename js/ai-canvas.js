@@ -12,12 +12,29 @@
     // Cell repaint interval
     const CELL_REPAINT_INTERVAL = [300, 500];
 
-    // Colors adapted to theme
-    const BG_COLOR = "#0F0F0F";
-    const BORDER_COLOR = "#13191f";
-    const CELL_HIGHLIGHT = "#F25C1F";
-    const ELECTRON_COLOR = "#F2F2F0";
-    const FONT_COLOR = "#F25C1F";
+    // ===== DESIGN TOKENS ===== //
+    // La paleta se lee de css/tokens.css (fuente canónica: DESIGN.md).
+    // CanvasRenderingContext2D no resuelve var(), de ahí esta lectura única
+    // desde el DOM con valores de respaldo idénticos a los tokens.
+    const TOKEN_FALLBACK = {
+        "color-bg": "#0F0F0F",
+        "color-border-subtle": "#13191f",
+        "color-primary": "#F25C1F",
+        "color-text": "#F2F2F0"
+    };
+
+    function readToken(name) {
+        const fallback = TOKEN_FALLBACK[name] || "#000000";
+        if (typeof window === "undefined" || !window.getComputedStyle) return fallback;
+        const value = getComputedStyle(document.documentElement).getPropertyValue(`--${name}`);
+        return (value && value.trim()) || fallback;
+    }
+
+    const BG_COLOR = readToken("color-bg");
+    const BORDER_COLOR = readToken("color-border-subtle");
+    const CELL_HIGHLIGHT = readToken("color-primary");
+    const ELECTRON_COLOR = readToken("color-text");
+    const FONT_COLOR = readToken("color-primary");
 
     const FONT_FAMILY = 'Ethnocentric, Arial, sans-serif';
 
@@ -67,9 +84,11 @@
 
     // ===== CLASSES ===== //
     class FullscreenCanvas {
-        constructor(disableScale = false) {
+        constructor(disableScale = false, willReadFrequently = false) {
             const canvas = document.createElement("canvas");
-            const context = canvas.getContext("2d");
+            // willReadFrequently: el lienzo de forma se lee con getImageData()
+            // en cada matriz; sin esta pista el navegador avisa por consola.
+            const context = canvas.getContext("2d", { willReadFrequently });
 
             this.canvas = canvas;
             this.context = context;
@@ -313,6 +332,7 @@
         lastText: "",
         lastImage: null,
         lastMatrix: null,
+        liveSource: null,
         renderID: undefined,
         isAlive: false,
 
@@ -349,7 +369,7 @@
 
             bgLayer = new FullscreenCanvas();
             mainLayer = new FullscreenCanvas();
-            shapeLayer = new FullscreenCanvas(true);
+            shapeLayer = new FullscreenCanvas(true, true);
 
             bgLayer.onResize(drawGrid);
             mainLayer.onResize(prepaint);
@@ -375,6 +395,7 @@
             this.lastText = "";
             this.lastImage = null;
             this.lastMatrix = null;
+            this.liveSource = null;
             PINNED_CELLS.length = 0;
 
             if (lastMatrix) {
@@ -418,27 +439,100 @@
         },
 
         drawImage(image) {
-            const { naturalWidth: width, naturalHeight: height } = image;
-            const scaleRatio = Math.min(
-                (shapeLayer.width * 0.8) / width,
-                (shapeLayer.height * 0.8) / height
-            );
+            this.showSource(image);
+        },
+
+        /**
+         * Muestra una fuente (HTMLImageElement o HTMLCanvasElement) como forma.
+         * @param {HTMLImageElement|HTMLCanvasElement} source
+         * @param {{live?: boolean}} options live=true mantiene la fuente viva
+         *        (GIF animado): el lienzo se repinta y la matriz de celdas se
+         *        sincroniza en cada refresco.
+         */
+        showSource(source, { live = false } = {}) {
+            if (!source) return;
+            const width = source.naturalWidth || source.width;
+            const height = source.naturalHeight || source.height;
+            if (!width || !height) return;
 
             this.clear();
             this.spiral();
 
             this.lastText = "";
-            this.lastImage = image;
+            this.lastImage = source;
+            this.liveSource = live ? source : null;
 
             shapeLayer.repaint((ctx) => {
+                this.paintSource(source)(ctx);
+                this.render();
+            });
+        },
+
+        sourceMetrics(source) {
+            const width = source.naturalWidth || source.width;
+            const height = source.naturalHeight || source.height;
+            const scaleRatio = Math.min(
+                (shapeLayer.width * 0.8) / width,
+                (shapeLayer.height * 0.8) / height
+            );
+            return { width, height, scaleRatio };
+        },
+
+        paintSource(source) {
+            const { width, height, scaleRatio } = this.sourceMetrics(source);
+            return (ctx) => {
                 ctx.drawImage(
-                    image,
+                    source,
                     (shapeLayer.width - width * scaleRatio) / 2,
                     (shapeLayer.height - height * scaleRatio) / 2,
                     width * scaleRatio,
                     height * scaleRatio
                 );
-                this.render();
+            };
+        },
+
+        /** Repinta la fuente viva y recalcula la matriz de celdas. */
+        refreshLive() {
+            if (!this.liveSource) return false;
+
+            const source = this.liveSource;
+            shapeLayer.repaint((ctx) => {
+                this.paintSource(source)(ctx);
+            });
+            this.syncMatrix();
+            return true;
+        },
+
+        /**
+         * Aplica la matriz actual sobre las celdas fijadas: añade las nuevas y
+         * retira las que ya no pertenecen a la forma (necesario cuando el GIF
+         * cambia de silueta entre fotogramas).
+         */
+        syncMatrix() {
+            const matrix = this.getMatrix();
+            const nextKeys = new Set();
+
+            matrix.forEach(([i, j]) => nextKeys.add(`${i},${j}`));
+
+            for (let i = PINNED_CELLS.length - 1; i >= 0; i--) {
+                const cell = PINNED_CELLS[i];
+                if (cell.liveKey && !nextKeys.has(cell.liveKey)) {
+                    PINNED_CELLS.splice(i, 1);
+                }
+            }
+
+            const currentKeys = new Set();
+            PINNED_CELLS.forEach((cell) => {
+                if (cell.liveKey) currentKeys.add(cell.liveKey);
+            });
+
+            matrix.forEach(([i, j]) => {
+                const key = `${i},${j}`;
+                if (currentKeys.has(key)) return;
+                const cell = new Cell(i, j, this.cellOptions);
+                cell.liveKey = key;
+                cell.scheduleUpdate(200);
+                cell.pin();
             });
         },
 
@@ -723,7 +817,20 @@
         mainLayer.blendBackground(bgLayer.canvas);
         drawItems();
         activateRandom();
+        refreshLiveSource();
         shape.renderID = requestAnimationFrame(render);
+    }
+
+    // Refresco de la fuente viva (GIF animado) limitado a ~8 fps para no
+    // reescribir la matriz de celdas en cada fotograma.
+    const LIVE_REFRESH_INTERVAL = 120;
+    let lastLiveRefresh = 0;
+
+    function refreshLiveSource() {
+        const now = Date.now();
+        if (now - lastLiveRefresh < LIVE_REFRESH_INTERVAL) return;
+        lastLiveRefresh = now;
+        shape.refreshLive();
     }
 
     // ===== COMMAND FUNCTIONS ===== //
@@ -783,6 +890,9 @@
 
     function processImage(src) {
         const image = new Image();
+        // Las imágenes remotas se piden con CORS para no ensuciar el lienzo:
+        // getImageData() lanzaría SecurityError sobre un canvas contaminado.
+        if (/^https?:/i.test(src)) image.crossOrigin = "anonymous";
         image.onload = () => {
             shape.drawImage(image);
         };
@@ -790,6 +900,192 @@
             shape.fillText("AI");
         };
         image.src = src;
+    }
+
+    // ===== COMMAND REGISTRY ===== //
+    // Fuente única de verdad: el motor ejecuta, la consola describe.
+    // La consola nunca duplica lógica, solo lee este registro.
+    const COMMAND_DEFINITIONS = [
+        {
+            id: "#naive",
+            label: "naive",
+            description: "Renderiza la silueta vectorial del unicornio",
+            aliases: [],
+            run: () => { shape.clear(); elder2(); }
+        },
+        {
+            id: "#elder",
+            label: "elder",
+            description: "Renderiza el fénix poliédrico",
+            aliases: ["🐸"],
+            run: () => { shape.clear(); elder(); }
+        },
+        {
+            id: "#galaxy",
+            label: "galaxy",
+            description: "Espiral de partículas en expansión continua",
+            aliases: [],
+            run: () => { shape.clear(); galaxy(); }
+        },
+        {
+            id: "#ring",
+            label: "ring",
+            description: "Anillo de electrones orbitando el centro",
+            aliases: [],
+            run: () => { shape.clear(); ring(); }
+        },
+        {
+            id: "#countdown",
+            label: "countdown",
+            description: "Cuenta atrás 3-2-1 y lanza la galaxia",
+            aliases: [],
+            run: () => { countdown(); }
+        },
+        {
+            id: "#queue",
+            label: "queue",
+            description: "Escribe «naïve» letra a letra",
+            aliases: [],
+            run: () => { queue(); }
+        },
+        {
+            id: "#explode",
+            label: "explode",
+            description: "Dispersa la forma actual en partículas",
+            aliases: [],
+            run: () => { shape.explode(); }
+        },
+        {
+            id: "#clear",
+            label: "clear",
+            description: "Apaga las partículas y limpia el lienzo",
+            aliases: [],
+            run: () => { shape.clear(); }
+        },
+        {
+            id: "#destroy",
+            label: "destroy",
+            description: "Destruye los lienzos y detiene el motor",
+            aliases: [],
+            run: () => { shape.destroy(); }
+        },
+        {
+            id: "#init",
+            label: "init",
+            description: "Reconstruye los lienzos y reactiva el motor",
+            aliases: [],
+            run: () => { shape.init(elements.container); }
+        },
+        {
+            id: "#cv",
+            label: "cv",
+            description: "Currículum: aptitudes, historial profesional y enlaces",
+            aliases: [],
+            run: () => { runContent("cv"); }
+        },
+        {
+            id: "#robot",
+            label: "robot",
+            description: "Nibble: robot fácil de montar y replicar",
+            aliases: [],
+            run: () => { runContent("robot"); }
+        },
+        {
+            id: "#reptile",
+            label: "reptile",
+            description: "Nosystat: dispositivo IoT para microclimas de terrario",
+            aliases: [],
+            run: () => { runContent("reptile"); }
+        },
+        {
+            id: "#next",
+            label: "next",
+            description: "Avanza a la siguiente diapositiva de la presentación",
+            aliases: [],
+            run: () => { runContent("next"); }
+        },
+        {
+            id: "#stop",
+            label: "stop",
+            description: "Detiene la presentación en curso",
+            aliases: [],
+            run: () => { runContent("stop"); }
+        }
+    ];
+
+    /**
+     * Resuelve y ejecuta una entrada de consola.
+     * @returns {{matched: boolean, command: object|null}}
+     */
+    /**
+     * Delega en el módulo de contenidos (js/content.js) la reproducción de un
+     * guion. El motor no conoce el contenido: solo lo dispara.
+     */
+    function runContent(action) {
+        if (!window.FenixContent) {
+            console.error("El módulo de contenidos (js/content.js) no está disponible.");
+            return;
+        }
+
+        if (action === "next" || action === "stop") {
+            if (typeof window.FenixContent[action] === "function") window.FenixContent[action]();
+            return;
+        }
+
+        if (typeof window.FenixContent.play === "function") window.FenixContent.play(action);
+    }
+
+    /**
+     * Resuelve y ejecuta una entrada de consola.
+     * @returns {{matched: boolean, command: object|null}}
+     */
+    function runCommand(value) {
+        const text = (value || "").trim();
+        const key = text.toLowerCase();
+
+        const command = COMMAND_DEFINITIONS.find(
+            (candidate) => candidate.id === key || candidate.aliases.indexOf(key) !== -1
+        );
+
+        if (!command) {
+            // Sin coincidencia se conserva el comportamiento histórico:
+            // el texto libre se renderiza sobre el lienzo.
+            shape.fillText(text);
+            return { matched: false, command: null };
+        }
+
+        command.run();
+        return { matched: true, command };
+    }
+
+    /**
+     * Ejecuta una entrada de consola. Única vía de ejecución del motor:
+     * la consola la invoca, nunca replica la lógica de negocio.
+     * Notifica el resultado mediante el evento `fnx:command` en el documento.
+     */
+    function execute(value) {
+        const text = (value || "").trim();
+        clearTimeout(timer);
+
+        // Aviso previo: permite a la presentación en curso detenerse antes
+        // de que el nuevo comando repinte el lienzo.
+        document.dispatchEvent(new CustomEvent("fnx:before-command", {
+            bubbles: true,
+            detail: { value: text }
+        }));
+
+        const outcome = runCommand(text);
+
+        document.dispatchEvent(new CustomEvent("fnx:command", {
+            bubbles: true,
+            detail: {
+                value: text,
+                matched: outcome.matched,
+                command: outcome.command ? outcome.command.id : null
+            }
+        }));
+
+        return outcome;
     }
 
     // ===== INITIALIZATION ===== //
@@ -807,50 +1103,41 @@
         elder();
 
         // Setup input handler
-        elements.input.addEventListener("keypress", ({ keyCode, target }) => {
-            if (keyCode === 13) {
+        // keydown en lugar del keypress deprecado: Enter por valor de tecla,
+        // con guarda de composición IME y de paste.
+        if (elements.input) {
+            elements.input.addEventListener("keydown", (event) => {
+                if (event.key !== "Enter" || event.isComposing) return;
+
+                event.preventDefault();
                 clearTimeout(timer);
+
+                const target = event.target;
                 const value = target.value.trim();
                 target.value = "";
 
-                switch (value) {
-                    case "#destroy":
-                        return shape.destroy();
-                    case "#init":
-                        return shape.init(elements.container);
-                    case "#explode":
-                        return shape.explode();
-                    case "#clear":
-                        return shape.clear();
-                    case "#queue":
-                        return queue();
-                    case "#countdown":
-                        return countdown();
-                    case "#galaxy":
-                        shape.clear();
-                        return galaxy();
-                    case "#ring":
-                        shape.clear();
-                        return ring();
-                    case "#naive":
-                        shape.clear();
-                        return elder2();
-                    case "#elder":
-                    case "🐸":
-                        shape.clear();
-                        return elder();
-                    default:
-                        return shape.fillText(value);
-                }
-            }
-        });
+                const outcome = runCommand(value);
+
+                // La consola observa este evento para dar feedback y nutrir el historial.
+                target.dispatchEvent(new CustomEvent("fnx:command", {
+                    bubbles: true,
+                    detail: {
+                        value,
+                        matched: outcome.matched,
+                        command: outcome.command ? outcome.command.id : null
+                    }
+                }));
+            });
+        }
 
         // Setup upload handler
-        elements.upload.addEventListener("change", () => {
-            const file = elements.upload.files[0];
-            if (!file) return elder2();
-            processImage(URL.createObjectURL(file));
-        });
+        if (elements.upload) {
+            elements.upload.addEventListener("change", () => {
+                const file = elements.upload.files[0];
+                if (!file) return elder2();
+                processImage(URL.createObjectURL(file));
+            });
+        }
 
         // Prevent touch zooming
         document.addEventListener("touchmove", (e) => e.preventDefault());
@@ -859,7 +1146,23 @@
     // Public API
     window.AICanvas = {
         init: initAICanvas,
-        destroy: () => shape.destroy()
+        destroy: () => shape.destroy(),
+        run: runCommand,
+        execute,
+        get commands() {
+            return COMMAND_DEFINITIONS.map((command) => ({
+                id: command.id,
+                label: command.label,
+                description: command.description
+            }));
+        },
+        // Escenario: superficie de render para el presentador de contenidos.
+        stage: {
+            display: (source, options) => shape.showSource(source, options),
+            refresh: () => shape.refreshLive(),
+            clear: () => shape.clear(),
+            text: (value) => shape.fillText(value)
+        }
     };
 
 })(); 

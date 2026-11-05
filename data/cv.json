@@ -1,0 +1,159 @@
+{
+  "id": "cv",
+  "command": "#cv",
+  "title": "CV",
+  "subtitle": "Fénix Ríos — Ingeniería de software, IoT y robótica",
+  "source": "https://fenixbinario.com/aboutme/",
+  "slides": [
+    {
+      "kind": "title",
+      "text": "CV",
+      "subtitle": "Mi nombre es Fénix Ríos. Tengo las siguientes cualidades, aptitudes y actitudes:"
+    },
+    {
+      "kind": "media",
+      "src": "https://fenixbinario.com/assets/img/evolution-cv.gif",
+      "title": "",
+      "caption": "",
+      "body": "Mi nombre es Fénix Ríos. Tengo las siguientes cualidades, aptitudes y actitudes:",
+      "live": true
+    },
+    {
+      "kind": "bullets",
+      "title": "",
+      "items": [
+        "Diseño de circuitos electronicos",
+        "Programar en distintos lenguajes como C, C++, Arduino, Python, Dark, javascript…",
+        "Me encanta el Firmware sobre microcontroladores ESP32, Atmel, MicroChip, ST y Hitachi",
+        "Capturar, procesar y mostrar DATOS.",
+        "Crear y diseñar APP´s",
+        "Diseño y fabricación de dispositivos IoT",
+        "Crear y diseñar Robots",
+        "Crear y diseñar dispositivos para la salud y cyborg"
+      ]
+    },
+    {
+      "kind": "section",
+      "title": "Industrias",
+      "body": "Empresas de desarrollo de software, electrotécnica, automatica e IoT."
+    },
+    {
+      "kind": "section",
+      "title": "Desempeño:",
+      "body": "Consultoría, Investigación y Desarrollo de prototipos."
+    },
+    {
+      "kind": "bullets",
+      "title": "Funciones de documentación",
+      "items": [
+        "Análisis de viabilidad técnica",
+        "Análisis de viabilidad económica",
+        "Estado del proyecto",
+        "Toma de requisitos",
+        "Análisis funcional",
+        "Diagramas de Arquitectura Software"
+      ]
+    },
+    {
+      "kind": "section",
+      "title": "Funciones de ingeniería de software:",
+      "body": "¿Por que no hago más? todo es posible! ya veremos! XD"
+    },
+    {
+      "kind": "bullets",
+      "title": "Funciones de ingeniería de software:",
+      "items": [
+        "Arquitectura software",
+        "Arquitectura Base datos",
+        "Capacidad de análisis, síntesis y control de versiones",
+        "C/C++, javascript, Git, SQL, QT, QML, IONIC, Flutter",
+        "Comandos: AT, ESC POSPCB",
+        "PLC, Micro y OS: Siemens Schneider Linux Embedded Raspberry PI Arduino Microchip 8/16/32 bit ESP32 SMT32",
+        "Metodologías usadas: To-Do UML Unit Testing Pair Programming R.A.D Kanban ScrumLean Canvas",
+        "Plan de pruebas - QA Testing: Punteros muertos División por cero Desbordamientos de enteros Operadores de cambio de bits inválidos Conversiones inválidas Uso no válido de STL Gestión de la memoria Desreferencias del puntero nulo Fuera de límites Variables sin inicializar"
+      ]
+    },
+    {
+      "kind": "section",
+      "title": "Mi Historia",
+      "body": "Para ser honesto tengo problemas para recordarlo, XD Empezaré por el final!"
+    },
+    {
+      "kind": "media",
+      "src": "https://fenixbinario.com/assets/img/manusa-2019.jpg",
+      "title": "Manusa",
+      "caption": "Manusa",
+      "body": "2019-2022 I+D Ingeniero Electronico IoT Despliegue de IoT para accesos inteligentes internacionalmente. Fog Computing; FreeRTOS, Simba y Pumba, ESP32, STM32, python,micropython y c++ Cloud Computing: Python, Nodejs AZURE –> IoT Managemet API: Python–> FlaskBig Data: Cosmos, Mongo y Mysql, Graph SQL App: IONIC –> IOS, Android, Windows Desktop SCADA: Python–> Flask & IONIC",
+      "live": false
+    },
+    {
+      "kind": "media",
+      "src": "https://fenixbinario.com/assets/img/indra.jpg",
+      "title": "Indra",
+      "caption": "Indra",
+      "body": "Diciembre 2017 - Diciembre de 2019 (2 años) Senior Software Engineering Barcelona Desarrollo de kit de actualizacion para automática a cliente TMB enlaboratorio. C++, MySql, Linux, QT, Unit Testing, Patrones de Diseño, UMLHardware (AVR, PIC , Kicad, diagramas …) Software (firmware, pcl, interfaz, midleware …) Documentación viabilidad técnica Documentación viabilidad económica",
+      "live": false
+    },
+    {
+      "kind": "media",
+      "src": "https://fenixbinario.com/assets/img/rs-fenix-2015.jpg",
+      "title": "RocaSalvatella",
+      "caption": "RocaSalvatella",
+      "body": "Febrero de 2016 - Diciembre de 2017 (1 año 11 meses) Ingeniero de software Barcelona y alrededores, España Desarrollo y ejecución en proyectos a medidas para grandes empresas. Simba y Pumba, ESP32, STM32, python, micropython y c++ Data Mine App SCADA",
+      "live": false
+    },
+    {
+      "kind": "section",
+      "title": "Factorsim",
+      "body": "Septiembre de 2015 - Febrero de 2016 (6 meses) Ingeniero de software Barcelona y alrededores, España C++ FirmWare Embedded System Unit Testing Socket i2C MySql Linux QT Visual Studio 2017 Middleware"
+    },
+    {
+      "kind": "media",
+      "src": "https://fenixbinario.com/assets/img/berepublic.gif",
+      "title": "BeRepublic",
+      "caption": "BeRepublic",
+      "body": "Mayo de 2013 - Octubre de 2014 (1 año 6 meses) Ingeniero de software Barcelona y alrededores, España QA & Operations Team C++, MySql, Linux, QT Visual Studio 2017 Kicad",
+      "live": true
+    },
+    {
+      "kind": "media",
+      "src": "https://fenixbinario.com/assets/img/br-fenix.jpg",
+      "title": "BeRepublic",
+      "caption": "BeRepublic",
+      "body": "Enero de 2013 - Febrero de 2013 (2 meses) Developer Manager Barcelona y alrededores, España Proyecto ABA English en la web oficial www.abaenglish.com en donde intervine como gestor de servidores C++ middleware",
+      "live": false
+    },
+    {
+      "kind": "media",
+      "src": "https://fenixbinario.com/assets/img/rt-2013.jpg",
+      "title": "Roomtab",
+      "caption": "Roomtab",
+      "body": "Agosto de 2012 - Enero de 2013 (6 meses) Ingeniero de software Barcelona y alrededores, España Developer version lite de la App de Roomtab C++ FirmWare MySql Visual Studio 2017 Contactless",
+      "live": false
+    },
+    {
+      "kind": "media",
+      "src": "https://fenixbinario.com/assets/img/fenix-freelance.jpg",
+      "title": "Freelance Technology Consultant",
+      "caption": "Freelance Technology Consultant",
+      "body": "Diciembre de 2009 - Julio de 2012 (2 años 8 meses) Engineer Software Ejecución de proyectos personalizados WebServices VídeoStreaming MiddleWare",
+      "live": false
+    },
+    {
+      "kind": "media",
+      "src": "https://fenixbinario.com/assets/img/nh-2-2010.jpg",
+      "title": "Nueva Hispania Films s.l",
+      "caption": "Nueva Hispania Films s.l",
+      "body": "Enero de 2005 - Noviembre de 2009 (4 años 11 meses) Ingeniero de software Jaén y alrededores, España Ejecución de proyecto C++, API y Video Streaming Web de la StartUp",
+      "live": false
+    },
+    {
+      "kind": "media",
+      "src": "https://fenixbinario.com/assets/img/estudiante-2009.jpg",
+      "title": "Educación",
+      "caption": "Estudiante",
+      "body": "Universidad de Jaén (UJA) Grado en Ingeniería Electrónica Industrial (E.P.S. Jaén) (2005)",
+      "live": false
+    }
+  ]
+}

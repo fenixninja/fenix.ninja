@@ -1,0 +1,53 @@
+{
+  "id": "robot",
+  "command": "#robot",
+  "title": "Nibble",
+  "subtitle": "Robot fácil de montar y replicar",
+  "source": "https://fenixbinario.com/2017-06-30-Nibble/",
+  "slides": [
+    {
+      "kind": "title",
+      "text": "Nibble",
+      "subtitle": "Un robot fácil de montar, replicable y modular para iniciarse en la robótica a un coste económico para cualquier alumno."
+    },
+    {
+      "kind": "media",
+      "src": "https://fenixbinario.com/assets/img/nibble-collage-1.png",
+      "title": "Concepto",
+      "caption": "Nibble",
+      "body": "Un robot fácil de montar, replicable y modular para iniciarse en la robótica a un coste económico para cualquier alumno.",
+      "live": false
+    },
+    {
+      "kind": "media",
+      "src": "https://fenixbinario.com/assets/img/nibble-collage-2.png",
+      "title": "Concepto",
+      "caption": "Nibble",
+      "body": "",
+      "live": false
+    },
+    {
+      "kind": "media",
+      "src": "https://fenixbinario.com/assets/img/nibble_arm_boceto.jpg",
+      "title": "Brazo con pinzas",
+      "caption": "Nibble",
+      "body": "El brazo tiene una pinza, y esta concebido para ser instalado en el cuerpo de el robot o en un vehiculo.",
+      "live": false
+    },
+    {
+      "kind": "section",
+      "title": "Desarrollo",
+      "body": "Para realizar este robot se ha elegido materiales accesibles y económicos."
+    },
+    {
+      "kind": "section",
+      "title": "Proceso",
+      "body": "El desarrollo en I+D está lleno de incertidumbres."
+    },
+    {
+      "kind": "section",
+      "title": "Evolución",
+      "body": "Este robot ha sido mejorado con nuevas piezas y funcionalidades."
+    }
+  ]
+}

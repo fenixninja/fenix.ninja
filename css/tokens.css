@@ -1,0 +1,88 @@
+/*
+ * Fenix Ninja — Design Tokens
+ * Fuente canónica: DESIGN.md
+ * Ningún componente escribe valores de color, radio o espaciado sueltos.
+ */
+
+:root {
+    /* ===== Superficies ===== */
+    --color-bg: #0F0F0F;
+    --color-surface: rgba(15, 15, 15, 0.86);
+    --color-surface-raised: #13191f;
+    --color-surface-sunken: rgba(0, 0, 0, 0.36);
+    --color-overlay: rgba(15, 15, 15, 0.72);
+
+    /* ===== Bordes ===== */
+    --color-border-subtle: #13191f;
+    --color-border-default: #262e37;
+    --color-border-strong: #3a444f;
+
+    /* ===== Marca ===== */
+    --color-primary: #F25C1F;
+    --color-primary-strong: #C0392B;
+    --color-primary-muted: rgba(242, 92, 31, 0.28);
+    --color-primary-faint: rgba(242, 92, 31, 0.12);
+
+    /* ===== Texto ===== */
+    --color-text: #F2F2F0;
+    --color-text-muted: rgba(242, 242, 240, 0.62);
+    --color-text-faint: rgba(242, 242, 240, 0.38);
+    --color-text-inverse: #0F0F0F;
+
+    /* ===== Semánticos ===== */
+    --color-danger: #C0392B;
+    --color-danger-muted: rgba(192, 57, 43, 0.24);
+    --color-focus-ring: #F25C1F;
+
+    /* ===== Tipografía ===== */
+    --font-display: 'Ethnocentric', 'Arial Narrow', Arial, sans-serif;
+    --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
+
+    --text-xs: 0.68rem;
+    --text-sm: 0.78rem;
+    --text-md: 0.92rem;
+    --text-lg: 1.05rem;
+
+    --weight-regular: 400;
+    --weight-medium: 500;
+    --weight-bold: 700;
+
+    --leading-tight: 1.25;
+    --leading-normal: 1.5;
+
+    /* ===== Espaciado ===== */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-7: 48px;
+
+    /* ===== Radios ===== */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-pill: 50px;
+
+    /* ===== Sombras ===== */
+    --shadow-panel: 0 18px 48px rgba(0, 0, 0, 0.55);
+    --shadow-glow: 0 10px 25px rgba(242, 92, 31, 0.32);
+    --shadow-glow-subtle: 0 0 0 1px rgba(242, 92, 31, 0.18);
+
+    /* ===== Movimiento ===== */
+    --duration-fast: 120ms;
+    --duration-base: 240ms;
+    --duration-slow: 420ms;
+    --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+    /* ===== Capas ===== */
+    --z-canvas: 1;
+    --z-console: 20;
+    --z-toast: 30;
+
+    /* ===== Métricas del lienzo (contraste con las constantes JS) ===== */
+    --canvas-cell-size: 8px;
+    --canvas-border-width: 2px;
+}

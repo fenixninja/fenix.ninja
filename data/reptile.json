@@ -1,0 +1,70 @@
+{
+  "id": "reptile",
+  "command": "#reptile",
+  "title": "Nosystat",
+  "subtitle": "Dispositivo IoT para microclimas de terrario",
+  "source": "https://fenixbinario.com/2017-02-26-Nosystat/",
+  "slides": [
+    {
+      "kind": "title",
+      "text": "Nosystat",
+      "subtitle": "Este proyecto del Internet de las cosas es un dispositivo que realicé junto a Borja Avi (herpetólogo), para ayudar a otros herpetologos a crear micro climas artificialmente para mantener y reproducir especies fuera de su hábitat natural. Consta de sensores de temperatura, húmedad, presión atmosférica, control de lluvias, control de ventilación, control de iluminación «foto-período» mediante salidas AC «Corriente Alterna» de conectores europeos."
+    },
+    {
+      "kind": "media",
+      "src": "https://fenixbinario.com/assets/img/m3.jpg",
+      "title": "IoT",
+      "caption": "nosystat",
+      "body": "Este proyecto del Internet de las cosas es un dispositivo que realicé junto a Borja Avi (herpetólogo), para ayudar a otros herpetologos a crear micro climas artificialmente para mantener y reproducir especies fuera de su hábitat natural. Consta de sensores de temperatura, húmedad, presión atmosférica, control de lluvias, control de ventilación, control de iluminación «foto-período» mediante salidas AC «Corriente Alterna» de conectores europeos.",
+      "live": false
+    },
+    {
+      "kind": "media",
+      "src": "https://fenixbinario.com/assets/img/nosystat.jpg",
+      "title": "Multiples plataformas",
+      "caption": "nosystat",
+      "body": "Con el fin de poder consultar información sobre el estado del hábitat, creé una aplicación híbrida multiplataforma con IONIC, dispone de notificaciones push, gráficos, eventos y distintos roles de usuario y detalles configurables del hábitat.",
+      "live": false
+    },
+    {
+      "kind": "media",
+      "src": "https://fenixbinario.com/assets/img/device_nosystat.jpg",
+      "title": "Desarrollo",
+      "caption": "nosystat",
+      "body": "Para realizar este producto especializado, fueron necesarios más de 7 meses y colaboraciones con distintos especialistas del sector de la herpetología y empresas de la industría.",
+      "live": false
+    },
+    {
+      "kind": "media",
+      "src": "https://fenixbinario.com/assets/img/nosystat-collage.png",
+      "title": "Proceso",
+      "caption": "nosystat 1",
+      "body": "El desarrollo en I+D está lleno de incertidumbres, os dejo algunos de los bocetos y prototipos del desarrollo.",
+      "live": false
+    },
+    {
+      "kind": "media",
+      "src": "https://fenixbinario.com/assets/img/nosystat-collage-2.png",
+      "title": "Proceso",
+      "caption": "nosystat 1",
+      "body": "",
+      "live": false
+    },
+    {
+      "kind": "media",
+      "src": "https://fenixbinario.com/assets/img/m1.jpg",
+      "title": "Evolución",
+      "caption": "nosystat 1",
+      "body": "El proyecto tuvo una evolución hacia sensores y actuadores individuales, tanto de uso de interior como de exterior",
+      "live": false
+    },
+    {
+      "kind": "media",
+      "src": "https://fenixbinario.com/assets/img/m2.jpg",
+      "title": "Evolución",
+      "caption": "nosystat 1",
+      "body": "",
+      "live": false
+    }
+  ]
+}
