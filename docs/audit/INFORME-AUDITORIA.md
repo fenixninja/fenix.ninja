@@ -13,6 +13,20 @@ Generado por `tools/audit.py` (Playwright + Chromium headless, 1440×900).
 | Excepciones no controladas | 0 |
 | Peticiones fallidas | 0 |
 
+## Vista previa publicada
+
+| Comprobación | Resultado | Detalle |
+| --- | --- | --- |
+| Consola plegada al entrar | PASS | `data-open=false`, lienzo de 1440px |
+| Auto-despliegue | PASS | la consola se abre sola a los 10 s |
+| Comandos con `/` | PASS | `/naive`, `/elder`, `/galaxy`… en la paleta |
+| `/robot` reproduce el guion | PASS | 7 diapositivas, indice 1 con imagen |
+| Errores de consola | 0 | |
+| Excepciones no controladas | 0 | |
+
+Capturas: `10-preview-publica.png` (unicorn a pantalla completa) y
+`11-preview-consola.png`.
+
 ## Comprobaciones
 
 | Comprobación | Resultado | Detalle |
