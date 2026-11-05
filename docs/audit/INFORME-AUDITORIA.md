@@ -13,6 +13,19 @@ Generado por `tools/audit.py` (Playwright + Chromium headless, 1440×900).
 | Excepciones no controladas | 0 |
 | Peticiones fallidas | 0 |
 
+## Vista previa publicada
+
+| Comprobación | Resultado | Detalle |
+| --- | --- | --- |
+| Consola a la derecha | PASS | panel desde x=922 de 1440px |
+| Imagen cargada en la consola | PASS | 362x290px, collage de Nibble |
+| Texto escribiéndose | PASS | `Concepto` + `Un ` con cursor |
+| Sin banda negra al retirar la consola | PASS | 0px de hueco |
+| Errores de consola | 0 | |
+| Excepciones no controladas | 0 | |
+
+Capturas: `10-preview-publica.png` y `11-preview-consola-retirada.png`.
+
 ## Comprobaciones
 
 | Comprobación | Resultado | Detalle |
