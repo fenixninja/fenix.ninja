@@ -547,6 +547,11 @@
         height: auto;
     }
 
+    /* Sin consola la animacion ocupa tambien la parte baja. */
+    body[data-console="closed"] .ai-canvas-wrapper {
+        bottom: 0;
+    }
+
     .fnx-console__toggle {
         right: var(--panel-gutter);
         bottom: calc(54vh + var(--panel-gutter));

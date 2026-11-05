@@ -1,6 +1,6 @@
 {
   "id": "robot",
-  "command": "#robot",
+  "command": "/robot",
   "title": "Nibble",
   "subtitle": "Robot fácil de montar y replicar",
   "source": "https://fenixbinario.com/2017-06-30-Nibble/",

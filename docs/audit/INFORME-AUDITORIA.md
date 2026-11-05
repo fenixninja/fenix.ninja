@@ -6,31 +6,20 @@ Generado por `tools/audit.py` (Playwright + Chromium headless, 1440×900).
 
 | Métrica | Valor |
 | --- | --- |
-| Comprobaciones | 48 |
-| Correctas | 48 |
+| Comprobaciones | 50 |
+| Correctas | 50 |
 | Fallidas | 0 |
 | Errores de consola del navegador | 0 |
 | Excepciones no controladas | 0 |
 | Peticiones fallidas | 0 |
-
-## Vista previa publicada
-
-| Comprobación | Resultado | Detalle |
-| --- | --- | --- |
-| Consola a la derecha | PASS | panel desde x=922 de 1440px |
-| Imagen cargada en la consola | PASS | 362x290px, collage de Nibble |
-| Texto escribiéndose | PASS | `Concepto` + `Un ` con cursor |
-| Sin banda negra al retirar la consola | PASS | 0px de hueco |
-| Errores de consola | 0 | |
-| Excepciones no controladas | 0 | |
-
-Capturas: `10-preview-publica.png` y `11-preview-consola-retirada.png`.
 
 ## Comprobaciones
 
 | Comprobación | Resultado | Detalle |
 | --- | --- | --- |
 | El motor AICanvas está inicializado | PASS | AICanvas + canvas en el contenedor |
+| La consola arranca plegada para que se vea la animacion | PASS | lienzo de 1440px de 1440px |
+| La consola se despliega sola si no se pulsa | PASS | desplegada a los 10.5 s |
 | La consola de comandos es visible | PASS | panel visible |
 | El panel de comandos existe en el DOM | PASS | 15 comandos listados |
 | La consola está en la columna derecha | PASS | panel desde x=922 de 1440px |
@@ -38,39 +27,39 @@ Capturas: `10-preview-publica.png` y `11-preview-consola-retirada.png`.
 | Al retirar la consola el lienzo ocupa todo el ancho | PASS | lienzo de 1440px, banda negra de 0px |
 | El sprite de iconos SVG propios está presente | PASS | icon-terminal + icon-upload |
 | La paleta se abre al enfocar la entrada | PASS | 15 opciones |
-| El filtro de la paleta reduce las opciones | PASS | ['#galaxyEspiral de partículas en expansión continua'] |
+| El filtro de la paleta reduce las opciones | PASS | ['/galaxyEspiral de partículas en expansión continua'] |
 | La navegación con teclado mueve la selección | PASS | aria-activedescendant activo |
-| El comando #galaxy se ejecuta | PASS | enviado |
-| El texto se escribe progresivamente en la columna derecha | PASS | 49 -> 57 caracteres, cursor visto: True |
-| La escritura avanza de forma continua | PASS | 2.0 caracteres/s en headless (los temporizadores van a ~1,7 Hz; en un navegador real el ritmo es de 17-40 ms por carácter) |
+| El comando /galaxy se ejecuta | PASS | enviado |
+| El texto se escribe progresivamente en la columna derecha | PASS | 50 -> 59 caracteres, cursor visto: True |
+| La escritura avanza de forma continua | PASS | 2.2 caracteres/s en headless (los temporizadores van a ~1,7 Hz; en un navegador real el ritmo es de 17-40 ms por carácter) |
 | Las imagenes remotas se cargan con CORS | PASS | 20 cargadas, 0 con error |
-| #cv monta el lienzo de celdas | PASS | canvas .fnx-slide presente |
-| El guion #cv se carga | PASS | 19 diapositivas |
-| #cv contiene medios | PASS | 10 con imagen |
-| #cv escribe el texto progresivamente | PASS | 3 -> 4 caracteres |
-| #cv termina la escritura al hacer clic | PASS | 24 -> 80 caracteres |
-| #cv revela la imagen de izquierda a derecha | PASS | fracción 0.08555555555555555 -> 1 |
-| #cv carga la imagen en la consola | PASS | 245x290px dentro del panel |
-| #cv deja la consola plegada durante la presentación | PASS | paleta oculta |
-| #robot monta el lienzo de celdas | PASS | canvas .fnx-slide presente |
-| El guion #robot se carga | PASS | 7 diapositivas |
-| #robot contiene medios | PASS | 3 con imagen |
-| #robot escribe el texto progresivamente | PASS | 1 -> 2 caracteres |
-| #robot termina la escritura al hacer clic | PASS | 11 -> 120 caracteres |
-| #robot revela la imagen de izquierda a derecha | PASS | fracción 0.46111111111111114 -> 1 |
-| #robot carga la imagen en la consola | PASS | 370x290px dentro del panel |
-| #robot deja la consola plegada durante la presentación | PASS | paleta oculta |
-| #reptile monta el lienzo de celdas | PASS | canvas .fnx-slide presente |
-| El guion #reptile se carga | PASS | 8 diapositivas |
-| #reptile contiene medios | PASS | 7 con imagen |
-| #reptile escribe el texto progresivamente | PASS | 1 -> 4 caracteres |
-| #reptile termina la escritura al hacer clic | PASS | 14 -> 448 caracteres |
-| #reptile revela la imagen de izquierda a derecha | PASS | fracción 0 -> 1 |
-| #reptile carga la imagen en la consola | PASS | 362x290px dentro del panel |
-| #reptile deja la consola plegada durante la presentación | PASS | paleta oculta |
+| /cv monta el lienzo de celdas | PASS | canvas .fnx-slide presente |
+| El guion /cv se carga | PASS | 19 diapositivas |
+| /cv contiene medios | PASS | 10 con imagen |
+| /cv revela la imagen de izquierda a derecha | PASS | fracción 0.5455555555555556 -> 0.9977777777777778 |
+| /cv carga la imagen en la consola | PASS | 386x290px dentro del panel |
+| /cv escribe el texto progresivamente | PASS | 19 -> 20 caracteres |
+| /cv termina la escritura al hacer clic | PASS | 32 -> 80 caracteres |
+| /cv deja la consola plegada durante la presentación | PASS | paleta oculta |
+| /robot monta el lienzo de celdas | PASS | canvas .fnx-slide presente |
+| El guion /robot se carga | PASS | 7 diapositivas |
+| /robot contiene medios | PASS | 3 con imagen |
+| /robot revela la imagen de izquierda a derecha | PASS | fracción 0 -> 0.09222222222222222 |
+| /robot carga la imagen en la consola | PASS | 362x290px dentro del panel |
+| /robot escribe el texto progresivamente | PASS | 7 -> 8 caracteres |
+| /robot termina la escritura al hacer clic | PASS | 20 -> 120 caracteres |
+| /robot deja la consola plegada durante la presentación | PASS | paleta oculta |
+| /reptile monta el lienzo de celdas | PASS | canvas .fnx-slide presente |
+| El guion /reptile se carga | PASS | 8 diapositivas |
+| /reptile contiene medios | PASS | 7 con imagen |
+| /reptile revela la imagen de izquierda a derecha | PASS | fracción 0 -> 0.17 |
+| /reptile carga la imagen en la consola | PASS | 482x290px dentro del panel |
+| /reptile escribe el texto progresivamente | PASS | 10 -> 12 caracteres |
+| /reptile termina la escritura al hacer clic | PASS | 32 -> 448 caracteres |
+| /reptile deja la consola plegada durante la presentación | PASS | paleta oculta |
 | El GIF se compone dentro de la consola | PASS | {'visible': True, 'src': '/assets/img/evolution-cv.gif', 'decoded': True, 'width': 386, 'height': 290, 'live': True} |
 | El bucle de imagen viva está activo en la diapositiva del GIF | PASS | bucle vivo: True |
-| La imagen del medio se ancla al DOM para poder reproducirse | PASS | 11 imagen(es) viva(s) |
+| La imagen del medio se ancla al DOM para poder reproducirse | PASS | 8 imagen(es) viva(s) |
 | La columna de resultado tiene scroll propio | PASS | overflow-y=auto, barra de 8px |
 | La barra de scroll usa nuestro estilo | PASS | pulgar rgb(58, 68, 79) (--color-border-strong) |
 | El botón pliega la consola | PASS | data-open=false |
@@ -115,4 +104,4 @@ Capturas: `10-preview-publica.png` y `11-preview-consola-retirada.png`.
 
 ## Conclusión
 
-Sin fallos: la consola de comandos y las presentaciones #cv, #robot y #reptile funcionan con 0 errores de consola y 0 excepciones no controladas.
+Sin fallos: la consola de comandos y las presentaciones /cv, /robot y /reptile funcionan con 0 errores de consola y 0 excepciones no controladas.

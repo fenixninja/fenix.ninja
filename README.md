@@ -16,6 +16,10 @@ después el **resultado** (el eco de cada comando y la narración de la
 presentación); abajo, el **campo de entrada**. Al retirar la consola el lienzo
 recupera todo el ancho: no queda banda negra.
 
+Al entrar, la consola está **plegada** para que se vea la animación completa
+del unicornio. Si no la tocas, **se despliega sola a los 10 segundos**; en
+cuanto pulsas el botón, el despliegue automático se cancela y manda el usuario.
+
 | Tecla | Acción |
 | --- | --- |
 | `Enter` | Ejecuta el comando (o el texto libre, que se rasteriza en el lienzo) |
@@ -44,20 +48,24 @@ escritura al instante.
 
 | Comando | Qué hace |
 | --- | --- |
-| `#naive` | Renderiza la silueta vectorial del unicornio |
-| `#elder` | Renderiza el fénix poliédrico |
-| `#galaxy` | Espiral de partículas en expansión continua |
-| `#ring` | Anillo de electrones orbitando el centro |
-| `#countdown` | Cuenta atrás 3-2-1 y lanza la galaxia |
-| `#queue` | Escribe «naïve» letra a letra |
-| `#explode` | Dispersa la forma actual en partículas |
-| `#clear` | Limpia el lienzo |
-| `#destroy` / `#init` | Destruye y reconstruye los lienzos |
-| `#cv` | **Presentación del CV**: aptitudes, historial profesional y enlaces |
-| `#robot` | **Presentación de Nibble**: robot fácil de montar y replicar |
-| `#reptile` | **Presentación de Nosystat**: dispositivo IoT para microclimas |
-| `#next` | Avanza a la siguiente diapositiva |
-| `#stop` | Detiene la presentación en curso |
+| `/naive` | Renderiza la silueta vectorial del unicornio |
+| `/elder` | Renderiza el fénix poliédrico |
+| `/galaxy` | Espiral de partículas en expansión continua |
+| `/ring` | Anillo de electrones orbitando el centro |
+| `/countdown` | Cuenta atrás 3-2-1 y lanza la galaxia |
+| `/queue` | Escribe «naïve» letra a letra |
+| `/explode` | Dispersa la forma actual en partículas |
+| `/clear` | Limpia el lienzo |
+| `/destroy` / `/init` | Destruye y reconstruye los lienzos |
+| `/cv` | **Presentación del CV**: aptitudes, historial profesional y enlaces |
+| `/robot` | **Presentación de Nibble**: robot fácil de montar y replicar |
+| `/reptile` | **Presentación de Nosystat**: dispositivo IoT para microclimas |
+| `/next` | Avanza a la siguiente diapositiva |
+| `/stop` | Detiene la presentación en curso |
+
+Los comandos empiezan por `/` (`/cv`, `/robot`, `/reptile`…). Cualquier otra
+entrada se rasteriza sobre el lienzo; una entrada que empieza por `/` pero no
+existe se informa como comando desconocido.
 
 El registro de comandos vive en `js/ai-canvas.js` y es la **fuente única de verdad**:
 el motor lo ejecuta y la consola solo lo describe. No hay lógica duplicada.

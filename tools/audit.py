@@ -3,7 +3,7 @@
 Fenix Ninja — auditoría visual y funcional en navegador.
 
 Levanta el sitio en local, recorre la consola de comandos, ejecuta cada
-comando de contenido (#cv, #robot, #reptile) y comprueba que la consola del
+comando de contenido (/cv, /robot, /reptile) y comprueba que la consola del
 navegador queda limpia (0 errores de script y 0 excepciones no controladas).
 
     python3 tools/audit.py
@@ -304,7 +304,7 @@ Generado por `tools/audit.py` (Playwright + Chromium headless, 1440×900).
 
 ## Conclusión
 
-{'Sin fallos: la consola de comandos y las presentaciones #cv, #robot y #reptile funcionan con 0 errores de consola y 0 excepciones no controladas.'
+{'Sin fallos: la consola de comandos y las presentaciones /cv, /robot y /reptile funcionan con 0 errores de consola y 0 excepciones no controladas.'
  if not ko and not report['console_errors'] and not report['page_errors']
  else 'Se detectaron incidencias: revisar la tabla de comprobaciones.'}
 """
@@ -341,11 +341,42 @@ def main():
 
         print("\n== Carga inicial ==")
         page.goto(base, wait_until="load", timeout=45000)
+        loaded_at = time.time()
         page.wait_for_timeout(4000)
 
         audit.step("El motor AICanvas está inicializado",
                    page.evaluate("!!(window.AICanvas && document.querySelector('#ai-canvas-container canvas'))"),
                    "AICanvas + canvas en el contenedor")
+
+        # La consola arranca plegada: la animacion se ve a pantalla completa.
+        initial = page.evaluate("""() => {
+            const wrap = document.querySelector('.ai-canvas-wrapper').getBoundingClientRect();
+            return {
+                open: document.getElementById('fnx-console').dataset.open,
+                visible: getComputedStyle(document.getElementById('fnx-console-panel')).visibility,
+                width: Math.round(wrap.width),
+                viewport: window.innerWidth
+            };
+        }""")
+        audit.step("La consola arranca plegada para que se vea la animacion",
+                   initial["open"] == "false" and initial["visible"] == "hidden"
+                   and initial["width"] >= initial["viewport"] - 1,
+                   f"lienzo de {initial['width']}px de {initial['viewport']}px")
+
+        # Si el usuario no la toca, la consola se despliega sola a los 10 s.
+        page.wait_for_function("""() => document.getElementById('fnx-console').dataset.open === 'true'""",
+                               timeout=20000)
+        elapsed = time.time() - loaded_at
+        audit.step("La consola se despliega sola si no se pulsa",
+                   8 <= elapsed <= 16,
+                   f"desplegada a los {elapsed:.1f} s")
+
+        # La expansion del lienzo se anima: se espera a que se asiente.
+        page.wait_for_function("""() => {
+            const wrap = document.querySelector('.ai-canvas-wrapper').getBoundingClientRect();
+            const panel = document.getElementById('fnx-console-panel').getBoundingClientRect();
+            return Math.abs(wrap.right - panel.left) <= 1;
+        }""", timeout=8000)
 
         audit.step("La consola de comandos es visible",
                    page.is_visible("#fnx-console-panel"),
@@ -374,7 +405,11 @@ def main():
 
         # Al retirar la consola el lienzo debe ocupar todo el ancho.
         page.click("#fnx-console-toggle")
-        page.wait_for_timeout(900)
+        # La expansion se anima: se espera a que termine la transicion.
+        page.wait_for_function("""() => {
+            const wrap = document.querySelector('.ai-canvas-wrapper').getBoundingClientRect();
+            return window.innerWidth - wrap.right <= 1;
+        }""", timeout=5000)
         collapsed = page.evaluate("""() => {
             const wrap = document.querySelector('.ai-canvas-wrapper').getBoundingClientRect();
             return {
@@ -390,7 +425,10 @@ def main():
         audit.frame()
 
         page.click("#fnx-console-toggle")
-        page.wait_for_timeout(900)
+        page.wait_for_function("""() => {
+            const wrap = document.querySelector('.ai-canvas-wrapper').getBoundingClientRect();
+            return window.innerWidth - wrap.right > 100;
+        }""", timeout=5000)
 
         audit.step("El sprite de iconos SVG propios está presente",
                    page.eval_on_selector_all("#icon-terminal, #icon-upload", "els => els.length") == 2,
@@ -406,11 +444,11 @@ def main():
                    page.is_visible("#fnx-command-list"),
                    f"{page.eval_on_selector_all('.fnx-console__option', 'els => els.length')} opciones")
 
-        page.fill("#ai-input", "#ga")
+        page.fill("#ai-input", "/ga")
         page.wait_for_timeout(400)
         filtered = page.eval_on_selector_all(".fnx-console__option", "els => els.map(e => e.textContent)")
         audit.step("El filtro de la paleta reduce las opciones",
-                   len(filtered) == 1 and "#galaxy" in filtered[0],
+                   len(filtered) == 1 and "/galaxy" in filtered[0],
                    str(filtered))
         audit.shot("02-paleta-filtrada")
         audit.frame()
@@ -425,21 +463,21 @@ def main():
                    page.evaluate("document.querySelector('#ai-input').getAttribute('aria-activedescendant')") is not None,
                    "aria-activedescendant activo")
 
-        page.fill("#ai-input", "#galaxy")
+        page.fill("#ai-input", "/galaxy")
         page.keyboard.press("Enter")
         page.wait_for_timeout(1500)
-        audit.step("El comando #galaxy se ejecuta", True, "enviado")
+        audit.step("El comando /galaxy se ejecuta", True, "enviado")
         audit.shot("03-comando-galaxy")
         audit.frame()
 
-        page.fill("#ai-input", "#naive")
+        page.fill("#ai-input", "/naive")
         page.keyboard.press("Enter")
         page.wait_for_timeout(2500)
         audit.shot("04-comando-naive")
         audit.frame()
 
         print("\n== Efecto de escritura ==")
-        page.fill("#ai-input", "#cv")
+        page.fill("#ai-input", "/cv")
         page.keyboard.press("Enter")
         page.wait_for_timeout(1800)
 
@@ -505,7 +543,7 @@ def main():
                    warmed["ok"] > 0 and warmed["fail"] == 0,
                    f"{warmed['ok']} cargadas, {warmed['fail']} con error")
 
-        for command, name in (("#cv", "cv"), ("#robot", "robot"), ("#reptile", "reptile")):
+        for command, name in (("/cv", "cv"), ("/robot", "robot"), ("/reptile", "reptile")):
             page.fill("#ai-input", command)
             page.keyboard.press("Enter")
             page.wait_for_timeout(600)
@@ -526,6 +564,27 @@ def main():
             }""" % name)
             audit.step(f"{command} contiene medios", media > 0, f"{media} con imagen")
 
+            # La imagen se revela de izquierda a derecha. El chequeo va
+            # primero: la presentacion avanza sola y despues no se puede
+            # volver a una diapositiva con imagen.
+            install_reveal_promise(page)
+            reveal = page.evaluate("() => window.__reveal")
+            audit.step(f"{command} revela la imagen de izquierda a derecha",
+                       bool(reveal.get("ok")),
+                       f"fracción {reveal.get('low')} -> {reveal.get('after')}")
+
+            media_in_console = reveal.get("media") or {}
+            audit.step(f"{command} carga la imagen en la consola",
+                       media_in_console["visible"]
+                       and bool(media_in_console["src"])
+                       and media_in_console["inside"],
+                       f"{media_in_console['width']}x{media_in_console['height']}px dentro del panel")
+
+            # La captura se toma en pleno revelado: la imagen entra en la
+            # consola mientras el texto se escribe.
+            audit.shot(f"06-{name}-medio")
+            audit.frame()
+
             # La escritura debe avanzar. La medida vive dentro de la pagina
             # para no depender del reloj del navegador sin ralentizar.
             install_grow_promise(page)
@@ -544,31 +603,6 @@ def main():
                        bool(skipped.get("ok")),
                        f"{skipped.get('before')} -> {skipped.get('after')} caracteres")
 
-            # Avanzar hasta un medio con imagen para capturarlo.
-            page.fill("#ai-input", "#next")
-            page.keyboard.press("Enter")
-
-            # La imagen se revela de izquierda a derecha: se sigue la fracción
-            # revelada desde dentro de la pagina, avanzando hasta la primera
-            # diapositiva que tenga imagen.
-            install_reveal_promise(page)
-            reveal = page.evaluate("() => window.__reveal")
-            audit.step(f"{command} revela la imagen de izquierda a derecha",
-                       bool(reveal.get("ok")),
-                       f"fracción {reveal.get('low')} -> {reveal.get('after')}")
-
-            # La captura se toma en pleno revelado: la imagen entra en la
-            # consola mientras el texto se escribe.
-            audit.shot(f"06-{name}-medio")
-            audit.frame()
-
-            media_in_console = reveal.get("media") or {}
-            audit.step(f"{command} carga la imagen en la consola",
-                       media_in_console["visible"]
-                       and bool(media_in_console["src"])
-                       and media_in_console["inside"],
-                       f"{media_in_console['width']}x{media_in_console['height']}px dentro del panel")
-
             page.wait_for_timeout(2200)
 
             # Estado real durante la presentación: consola plegada a una línea.
@@ -581,7 +615,7 @@ def main():
             audit.frame()
 
         print("\n== GIF animado (CV) ==")
-        page.fill("#ai-input", "#cv")
+        page.fill("#ai-input", "/cv")
         page.keyboard.press("Enter")
         page.wait_for_timeout(300)
 

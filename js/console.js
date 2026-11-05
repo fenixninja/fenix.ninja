@@ -19,9 +19,15 @@
         activeIndex: -1,
         history: [],
         historyIndex: -1,
-        open: true,
+        open: false,
         presentation: null
     };
+
+    // La consola entra plegada para que se vea la animacion. Si el usuario
+    // no la toca, se despliega sola: el aviso llega sin molestarle.
+    const AUTO_OPEN_DELAY = 10000;
+    const MOBILE_BREAKPOINT = 768;
+    let autoOpenTimer = null;
 
     const el = {};
 
@@ -239,7 +245,23 @@
     }
 
     // ===== TOGGLE ===== //
-    function setOpen(open) {
+    function cancelAutoOpen() {
+        if (!autoOpenTimer) return;
+        clearTimeout(autoOpenTimer);
+        autoOpenTimer = null;
+    }
+
+    function scheduleAutoOpen() {
+        cancelAutoOpen();
+        autoOpenTimer = setTimeout(() => {
+            autoOpenTimer = null;
+            // En movil no se roba el foco: abrir el teclado del sistema sin
+            // que el usuario lo pida es una intromision.
+            setOpen(true, { focus: window.innerWidth > MOBILE_BREAKPOINT });
+        }, AUTO_OPEN_DELAY);
+    }
+
+    function setOpen(open, { focus = true } = {}) {
         state.open = open;
         if (!el.console) return;
 
@@ -255,10 +277,16 @@
         }
 
         if (open) {
-            if (el.input) el.input.focus();
+            if (focus && el.input) el.input.focus();
         } else {
             hideList();
         }
+    }
+
+    function toggleOpen() {
+        // El usuario toma el control: la consola ya no se despliega sola.
+        cancelAutoOpen();
+        setOpen(!state.open);
     }
 
     // ===== EVENTOS ===== //
@@ -322,7 +350,7 @@
         if (tag === "input" || tag === "textarea" || (target && target.isContentEditable)) return;
 
         event.preventDefault();
-        setOpen(!state.open);
+        toggleOpen();
     }
 
     function handleCommandExecuted(event) {
@@ -341,7 +369,7 @@
         log(value, { kind: "echo", prefix: "> " });
 
         if (!matched) {
-            if (value.charAt(0) === "#") {
+            if (value.charAt(0) === "/") {
                 log("Comando desconocido", { tone: "danger", code: value });
             } else {
                 log("Texto rasterizado en el lienzo", { tone: "primary" });
@@ -349,7 +377,7 @@
             return;
         }
 
-        if (command === "#cv" || command === "#robot" || command === "#reptile") {
+        if (command === "/cv" || command === "/robot" || command === "/reptile") {
             log("Presentación en marcha", { tone: "primary", code: command });
         }
     }
@@ -420,7 +448,7 @@
         });
 
         if (el.toggle) {
-            el.toggle.addEventListener("click", () => setOpen(!state.open));
+            el.toggle.addEventListener("click", toggleOpen);
         }
 
         if (el.uploadButton && el.upload) {
@@ -431,7 +459,9 @@
         document.addEventListener("fnx:command", handleCommandExecuted);
         document.addEventListener("fnx:presentation", handlePresentation);
 
-        setOpen(true);
+        // Arranca plegada: la animacion se ve a pantalla completa.
+        setOpen(false);
+        scheduleAutoOpen();
         renderList();
         updateCount();
     }

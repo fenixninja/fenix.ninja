@@ -8,7 +8,7 @@
         reptile: "data/reptile.json"
     };
 
-    const PRESENTATION_COMMANDS = ["#cv", "#robot", "#reptile", "#next", "#stop"];
+    const PRESENTATION_COMMANDS = ["/cv", "/robot", "/reptile", "/next", "/stop"];
 
     const cache = new Map();
     let presenter = null;

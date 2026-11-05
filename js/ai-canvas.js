@@ -117,15 +117,22 @@
             if (!container) return;
 
             const rect = container.getBoundingClientRect();
-            this.width = rect.width;
-            this.height = rect.height;
+
+            // Un lienzo de 0 px es invalido y hace que getImageData() y
+            // drawImage() lancen. El contenedor puede quedar vacio mientras
+            // los lienzos se destruyen y se reconstruyen.
+            const width = Math.max(1, rect.width);
+            const height = Math.max(1, rect.height);
+
+            this.width = width;
+            this.height = height;
 
             const scale = disableScale ? 1 : DPR;
 
-            this.realWidth = canvas.width = rect.width * scale;
-            this.realHeight = canvas.height = rect.height * scale;
-            canvas.style.width = `${rect.width}px`;
-            canvas.style.height = `${rect.height}px`;
+            this.realWidth = canvas.width = Math.round(width * scale);
+            this.realHeight = canvas.height = Math.round(height * scale);
+            canvas.style.width = `${width}px`;
+            canvas.style.height = `${height}px`;
 
             context.scale(scale, scale);
         }
@@ -434,6 +441,8 @@
 
         getMatrix() {
             const { width, height } = shapeLayer;
+            if (!width || !height) return [];
+
             const pixels = shapeLayer.context.getImageData(0, 0, width, height).data;
             const matrix = [];
 
@@ -492,6 +501,8 @@
         },
 
         paintSource(source) {
+            if (!source || !source.width || !source.height) return () => {};
+
             const { width, height, scaleRatio } = this.sourceMetrics(source);
             return (ctx) => {
                 ctx.drawImage(
@@ -920,105 +931,105 @@
     // La consola nunca duplica lógica, solo lee este registro.
     const COMMAND_DEFINITIONS = [
         {
-            id: "#naive",
+            id: "/naive",
             label: "naive",
             description: "Renderiza la silueta vectorial del unicornio",
             aliases: [],
             run: () => { shape.clear(); elder2(); }
         },
         {
-            id: "#elder",
+            id: "/elder",
             label: "elder",
             description: "Renderiza el fénix poliédrico",
             aliases: ["🐸"],
             run: () => { shape.clear(); elder(); }
         },
         {
-            id: "#galaxy",
+            id: "/galaxy",
             label: "galaxy",
             description: "Espiral de partículas en expansión continua",
             aliases: [],
             run: () => { shape.clear(); galaxy(); }
         },
         {
-            id: "#ring",
+            id: "/ring",
             label: "ring",
             description: "Anillo de electrones orbitando el centro",
             aliases: [],
             run: () => { shape.clear(); ring(); }
         },
         {
-            id: "#countdown",
+            id: "/countdown",
             label: "countdown",
             description: "Cuenta atrás 3-2-1 y lanza la galaxia",
             aliases: [],
             run: () => { countdown(); }
         },
         {
-            id: "#queue",
+            id: "/queue",
             label: "queue",
             description: "Escribe «naïve» letra a letra",
             aliases: [],
             run: () => { queue(); }
         },
         {
-            id: "#explode",
+            id: "/explode",
             label: "explode",
             description: "Dispersa la forma actual en partículas",
             aliases: [],
             run: () => { shape.explode(); }
         },
         {
-            id: "#clear",
+            id: "/clear",
             label: "clear",
             description: "Apaga las partículas y limpia el lienzo",
             aliases: [],
             run: () => { shape.clear(); }
         },
         {
-            id: "#destroy",
+            id: "/destroy",
             label: "destroy",
             description: "Destruye los lienzos y detiene el motor",
             aliases: [],
             run: () => { shape.destroy(); }
         },
         {
-            id: "#init",
+            id: "/init",
             label: "init",
             description: "Reconstruye los lienzos y reactiva el motor",
             aliases: [],
             run: () => { shape.init(elements.container); }
         },
         {
-            id: "#cv",
+            id: "/cv",
             label: "cv",
             description: "Currículum: aptitudes, historial profesional y enlaces",
             aliases: [],
             run: () => { runContent("cv"); }
         },
         {
-            id: "#robot",
+            id: "/robot",
             label: "robot",
             description: "Nibble: robot fácil de montar y replicar",
             aliases: [],
             run: () => { runContent("robot"); }
         },
         {
-            id: "#reptile",
+            id: "/reptile",
             label: "reptile",
             description: "Nosystat: dispositivo IoT para microclimas de terrario",
             aliases: [],
             run: () => { runContent("reptile"); }
         },
         {
-            id: "#next",
+            id: "/next",
             label: "next",
             description: "Avanza a la siguiente diapositiva de la presentación",
             aliases: [],
             run: () => { runContent("next"); }
         },
         {
-            id: "#stop",
+            id: "/stop",
             label: "stop",
             description: "Detiene la presentación en curso",
             aliases: [],

@@ -6,6 +6,16 @@
       "detail": "AICanvas + canvas en el contenedor"
     },
     {
+      "name": "La consola arranca plegada para que se vea la animacion",
+      "ok": true,
+      "detail": "lienzo de 1440px de 1440px"
+    },
+    {
+      "name": "La consola se despliega sola si no se pulsa",
+      "ok": true,
+      "detail": "desplegada a los 10.5 s"
+    },
+    {
       "name": "La consola de comandos es visible",
       "ok": true,
       "detail": "panel visible"
@@ -43,7 +53,7 @@
     {
       "name": "El filtro de la paleta reduce las opciones",
       "ok": true,
-      "detail": "['#galaxyEspiral de partículas en expansión continua']"
+      "detail": "['/galaxyEspiral de partículas en expansión continua']"
     },
     {
       "name": "La navegación con teclado mueve la selección",
@@ -51,19 +61,19 @@
       "detail": "aria-activedescendant activo"
     },
     {
-      "name": "El comando #galaxy se ejecuta",
+      "name": "El comando /galaxy se ejecuta",
       "ok": true,
       "detail": "enviado"
     },
     {
       "name": "El texto se escribe progresivamente en la columna derecha",
       "ok": true,
-      "detail": "49 -> 57 caracteres, cursor visto: True"
+      "detail": "50 -> 59 caracteres, cursor visto: True"
     },
     {
       "name": "La escritura avanza de forma continua",
       "ok": true,
-      "detail": "2.0 caracteres/s en headless (los temporizadores van a ~1,7 Hz; en un navegador real el ritmo es de 17-40 ms por carácter)"
+      "detail": "2.2 caracteres/s en headless (los temporizadores van a ~1,7 Hz; en un navegador real el ritmo es de 17-40 ms por carácter)"
     },
     {
       "name": "Las imagenes remotas se cargan con CORS",
@@ -71,122 +81,122 @@
       "detail": "20 cargadas, 0 con error"
     },
     {
-      "name": "#cv monta el lienzo de celdas",
+      "name": "/cv monta el lienzo de celdas",
       "ok": true,
       "detail": "canvas .fnx-slide presente"
     },
     {
-      "name": "El guion #cv se carga",
+      "name": "El guion /cv se carga",
       "ok": true,
       "detail": "19 diapositivas"
     },
     {
-      "name": "#cv contiene medios",
+      "name": "/cv contiene medios",
       "ok": true,
       "detail": "10 con imagen"
     },
     {
-      "name": "#cv escribe el texto progresivamente",
+      "name": "/cv revela la imagen de izquierda a derecha",
       "ok": true,
-      "detail": "3 -> 4 caracteres"
+      "detail": "fracción 0.5455555555555556 -> 0.9977777777777778"
     },
     {
-      "name": "#cv termina la escritura al hacer clic",
+      "name": "/cv carga la imagen en la consola",
       "ok": true,
-      "detail": "24 -> 80 caracteres"
+      "detail": "386x290px dentro del panel"
     },
     {
-      "name": "#cv revela la imagen de izquierda a derecha",
+      "name": "/cv escribe el texto progresivamente",
       "ok": true,
-      "detail": "fracción 0.08555555555555555 -> 1"
+      "detail": "19 -> 20 caracteres"
     },
     {
-      "name": "#cv carga la imagen en la consola",
+      "name": "/cv termina la escritura al hacer clic",
       "ok": true,
-      "detail": "245x290px dentro del panel"
+      "detail": "32 -> 80 caracteres"
     },
     {
-      "name": "#cv deja la consola plegada durante la presentación",
+      "name": "/cv deja la consola plegada durante la presentación",
       "ok": true,
       "detail": "paleta oculta"
     },
     {
-      "name": "#robot monta el lienzo de celdas",
+      "name": "/robot monta el lienzo de celdas",
       "ok": true,
       "detail": "canvas .fnx-slide presente"
     },
     {
-      "name": "El guion #robot se carga",
+      "name": "El guion /robot se carga",
       "ok": true,
       "detail": "7 diapositivas"
     },
     {
-      "name": "#robot contiene medios",
+      "name": "/robot contiene medios",
       "ok": true,
       "detail": "3 con imagen"
     },
     {
-      "name": "#robot escribe el texto progresivamente",
+      "name": "/robot revela la imagen de izquierda a derecha",
       "ok": true,
-      "detail": "1 -> 2 caracteres"
+      "detail": "fracción 0 -> 0.09222222222222222"
     },
     {
-      "name": "#robot termina la escritura al hacer clic",
-      "ok": true,
-      "detail": "11 -> 120 caracteres"
-    },
-    {
-      "name": "#robot revela la imagen de izquierda a derecha",
-      "ok": true,
-      "detail": "fracción 0.46111111111111114 -> 1"
-    },
-    {
-      "name": "#robot carga la imagen en la consola",
-      "ok": true,
-      "detail": "370x290px dentro del panel"
-    },
-    {
-      "name": "#robot deja la consola plegada durante la presentación",
-      "ok": true,
-      "detail": "paleta oculta"
-    },
-    {
-      "name": "#reptile monta el lienzo de celdas",
-      "ok": true,
-      "detail": "canvas .fnx-slide presente"
-    },
-    {
-      "name": "El guion #reptile se carga",
-      "ok": true,
-      "detail": "8 diapositivas"
-    },
-    {
-      "name": "#reptile contiene medios",
-      "ok": true,
-      "detail": "7 con imagen"
-    },
-    {
-      "name": "#reptile escribe el texto progresivamente",
-      "ok": true,
-      "detail": "1 -> 4 caracteres"
-    },
-    {
-      "name": "#reptile termina la escritura al hacer clic",
-      "ok": true,
-      "detail": "14 -> 448 caracteres"
-    },
-    {
-      "name": "#reptile revela la imagen de izquierda a derecha",
-      "ok": true,
-      "detail": "fracción 0 -> 1"
-    },
-    {
-      "name": "#reptile carga la imagen en la consola",
+      "name": "/robot carga la imagen en la consola",
       "ok": true,
       "detail": "362x290px dentro del panel"
     },
     {
-      "name": "#reptile deja la consola plegada durante la presentación",
+      "name": "/robot escribe el texto progresivamente",
+      "ok": true,
+      "detail": "7 -> 8 caracteres"
+    },
+    {
+      "name": "/robot termina la escritura al hacer clic",
+      "ok": true,
+      "detail": "20 -> 120 caracteres"
+    },
+    {
+      "name": "/robot deja la consola plegada durante la presentación",
+      "ok": true,
+      "detail": "paleta oculta"
+    },
+    {
+      "name": "/reptile monta el lienzo de celdas",
+      "ok": true,
+      "detail": "canvas .fnx-slide presente"
+    },
+    {
+      "name": "El guion /reptile se carga",
+      "ok": true,
+      "detail": "8 diapositivas"
+    },
+    {
+      "name": "/reptile contiene medios",
+      "ok": true,
+      "detail": "7 con imagen"
+    },
+    {
+      "name": "/reptile revela la imagen de izquierda a derecha",
+      "ok": true,
+      "detail": "fracción 0 -> 0.17"
+    },
+    {
+      "name": "/reptile carga la imagen en la consola",
+      "ok": true,
+      "detail": "482x290px dentro del panel"
+    },
+    {
+      "name": "/reptile escribe el texto progresivamente",
+      "ok": true,
+      "detail": "10 -> 12 caracteres"
+    },
+    {
+      "name": "/reptile termina la escritura al hacer clic",
+      "ok": true,
+      "detail": "32 -> 448 caracteres"
+    },
+    {
+      "name": "/reptile deja la consola plegada durante la presentación",
       "ok": true,
       "detail": "paleta oculta"
     },
@@ -203,7 +213,7 @@
     {
       "name": "La imagen del medio se ancla al DOM para poder reproducirse",
       "ok": true,
-      "detail": "11 imagen(es) viva(s)"
+      "detail": "8 imagen(es) viva(s)"
     },
     {
       "name": "La columna de resultado tiene scroll propio",

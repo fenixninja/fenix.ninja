@@ -30,7 +30,7 @@ la misma paleta que el lienzo, de modo que el sistema se lee como una sola pieza
 
 La tipografía display se reserva para titulares y para el texto rasterizado en el
 lienzo. El texto de la consola es monoespaciado: alinea los identificadores de
-comando (`#galaxy`) y facilita la lectura de la paleta.
+comando (`/galaxy`) y facilita la lectura de la paleta.
 
 ## Espaciado y radios
 
@@ -54,6 +54,16 @@ operativo como iconografía funcional.**
 
 - `#icon-terminal` — marca de la consola y botón de entrada.
 - `#icon-upload` — subida de imagen.
+
+## Estado inicial de la consola
+
+La consola **arranca plegada**: el lienzo ocupa todo el ancho y la animación
+del unicornio se ve a pantalla completa. Si el usuario no la toca, se despliega
+sola a los **10 segundos** (`AUTO_OPEN_DELAY`). Al pulsar el botón (o la tecla
+`` ` ``) el despliegue automático se cancela: a partir de ahí manda el usuario.
+
+En móvil el comportamiento es el mismo, y además el auto-despliegue no roba
+el foco: no se abre el teclado del sistema sin que el usuario lo pida.
 
 ## Columnas del lienzo y de la consola
 

@@ -1,6 +1,6 @@
 {
   "id": "reptile",
-  "command": "#reptile",
+  "command": "/reptile",
   "title": "Nosystat",
   "subtitle": "Dispositivo IoT para microclimas de terrario",
   "source": "https://fenixbinario.com/2017-02-26-Nosystat/",

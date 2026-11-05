@@ -1,6 +1,6 @@
 {
   "id": "cv",
-  "command": "#cv",
+  "command": "/cv",
   "title": "CV",
   "subtitle": "Fénix Ríos — Ingeniería de software, IoT y robótica",
   "source": "https://fenixbinario.com/aboutme/",

@@ -334,7 +334,7 @@ function buildDeck({ id, command, title, subtitle, source, blocks, leadParagraph
 const SOURCES = {
     cv: {
         id: "cv",
-        command: "#cv",
+        command: "/cv",
         url: "https://fenixbinario.com/aboutme/",
         title: "CV",
         subtitle: "Fénix Ríos — Ingeniería de software, IoT y robótica",
@@ -346,7 +346,7 @@ const SOURCES = {
     },
     robot: {
         id: "robot",
-        command: "#robot",
+        command: "/robot",
         url: "https://fenixbinario.com/2017-06-30-Nibble/",
         title: "Nibble",
         subtitle: "Robot fácil de montar y replicar",
@@ -358,7 +358,7 @@ const SOURCES = {
     },
     reptile: {
         id: "reptile",
-        command: "#reptile",
+        command: "/reptile",
         url: "https://fenixbinario.com/2017-02-26-Nosystat/",
         title: "Nosystat",
         subtitle: "Dispositivo IoT para microclimas de terrario",

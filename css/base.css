@@ -37,7 +37,9 @@ body {
     height: 100%;
     background: var(--color-bg);
     overflow: hidden;
-    transition: right var(--duration-slow) var(--ease-out);
+    transition:
+        right var(--duration-slow) var(--ease-out),
+        bottom var(--duration-slow) var(--ease-out);
     z-index: var(--z-canvas);
 }
 

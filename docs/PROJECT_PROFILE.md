@@ -71,6 +71,8 @@ proceso aplican y cuáles quedan fuera de alcance.
 - Las imágenes se cargan dentro de la consola y se revelan con un velo; en el
   lienzo queda el render de celdas de la silueta.
 - Al retirar la consola el lienzo recupera todo el ancho: no queda banda negra.
+- La consola arranca plegada y se despliega sola a los 10 s si el usuario no la
+  toca: la animacion se ve completa antes de que aparezca la interfaz.
 - La narración y el medio van en paralelo: la escritura nunca se interrumpe por
   una imagen lenta y la diapositiva avanza al terminar de leerse.
 - El plazo de una diapositiva con medio arranca cuando el medio está listo, no
